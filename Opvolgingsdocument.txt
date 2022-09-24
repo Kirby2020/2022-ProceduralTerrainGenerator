@@ -1,0 +1,230 @@
+=================================================================================
+
+Persoonlijk ontwikkelingsplan (POP) - opvolgingsdocument Academiejaar 2022-2023
+
+=================================================================================
+
+
+
+
+Student:	Jonathan Vercammen
+
+Mentor:		<in te vullen door de mentor>
+
+
+=================================================================================
+Beschrijving - datum 24/09/2022 
+=================================================================================
+
+Onderwerp:
+
+	Volledig afgewerkte indie game of VR-demo.
+
+
+Einddoelen (met evaluatiecriteria):
+
+1. einddoel 1
+	Professioneel afgewerkt spel maken
+		- Eenvoudig prototype maken
+		- Afwerken tot een compleet geheel
+2. einddoel 2
+	Dit spel online beschikbaar zetten
+		- Staat ergens online beschikbaar voor download. Op een eigen site of op een bestaand platform zoals Steam.
+3. einddoel 3
+	Programmeerconcepten/design patterns gebruiken in de context van game development.
+		- Gebruik van een geschreven state machine
+		- Gebruik van een geschreven AI?
+4. einddoel 4
+	Efficiënt leren werken met een project planning tool zoals Trello, Gantt of ClickUp
+		- Regelmatige deadlines instellen en opvolgen
+		- Roadmap/planning voor latere game-elementen
+		
+
+Motivatie - betrokkenheid:
+
+Ik ben al heel lang geïnteresseerd in gaming en heb altijd al zelf mijn eigen games willen maken.
+In de middelbare school probeerde ik al een beetje te programmeren door de "voor dummy"-boeken te lezen van JavaScript en Unity.
+Hiermee geraakte ik niet echt ver en door de drukte van school is dit stillaan verdwenen.
+
+Uiteindelijk zat ik op de hoge school en kon ik al snel een simpele Pong-game maken. Toen zag ik dat dit echt was wat mij interesseerde aan programmeren.
+Vorig jaar voor een groepswerk hebben wij een multiplayer tower defense game gemaakt. Dit vond ik het leukste project tot nu toe.
+Alleen is het jammer genoeg niet zo afgewerkt als ik had gehoopt door het gebrek aan inzet van sommige groepsleden...
+
+Met dit vak wil ik mijzelf bewijzen dat ik wel degelijk een game kan maken dat volledig functioneel is.
+Uiteraard verwacht ik niet de volgende Undertale of Fall Guys te maken maar ik hoop toch op een game waar veel mensen zich mee bezig kunnen houden.
+
+
+
+Motivatie - grenzen verleggen:
+
+Ik heb nog nooit een game gemaakt waar ik echt blij mee was. De afwerking was er nooit of er zaten nog te veel bugs in.
+Bij deze wil ik mijzelf pushen in game development en een echte volledig afgwerkte game presenteren.
+
+
+
+Motivatie - professioneel profiel:
+
+Later zou ik graag werken in de gaming industrie of als indie developer
+
+
+
+kerndoelen: 
+
+1.a: 	De student realiseert onderstaande kerndoelen binnen het deelgebied van de
+	programmatie en gegevensbanken. 
+2.b: 	De student kan voor een concreet probleem een oplossing ontwikkelen die voldoet aan
+	de vooropgestelde eisen. 
+6.e:  	De student kan een voorgestelde aanpak, oplossing of aanbeveling op een
+	gestructureerde manier verantwoorden op basis van eigen onderzoek, kennis en inzicht
+	en beoordeling van voor- en nadelen.
+(7.h): 	De student kan een adequate tijdsplanning opstellen om de eigen taken uit te voeren
+	binnen het kader van de globale planning van het (team). 
+10.m:	De student kan tekorten in de eigen kennis of competentie identificeren en neemt
+	initiatief om ze te remediëren. 
+10.n:	De student verzamelt voldoende informatie over nieuwe ontwikkelingen binnen een
+	(deel)gebied van Elektronica/ICT en kan argumenteren over belang ervan. 
+
+
+Werkvormen:
+
+Eerst ga ik brainstormen over een game-idee: welk genre? Welke functionaliteiten (AI...).
+Dan ga ik een roadmap maken met alle deadlines die ik graag zou halen.
+Vervolgens ga ik op zoek op het internet naar informatie over de technologieën die ik wil gebruiken in mijn game en evenuteel een aantal dev logs bekijken
+om te zien hoe anderen dit doen. 
+Daarna ga ik op zoek naar assets, eventueel zelfgemaakt, voor graphics, geluid...
+Dan begin ik met het prototype en kijk ik of mijn idee haalbaar is.
+Nadien zet ik het prototype om in speelbare game en werk ik de core gameplay af.
+Vervolgens begin ik de testfase en steek ik extra functies in de game.
+Ten slotte kijk ik of ik de game online kan zetten. Eventueel met een zelfgeschreven website.
+
+Wie weet kan ik misschien hierna nog verder de game uitbreiden afhankelijk van het idee dat ik kies.
+Ofwel is dit de start van nog vele andere games.
+
+
+
+
+=================================================================================
+Planning - <datum van eerste ingave> (op te stellen nadat je voorstel is goedgekeurd)
+=================================================================================
+
+<Hou hier je werkplanning bij, op te stellen nadat je voorstel is goedgekeurd>
+
+
+=================================================================================
+Logboek
+=================================================================================
+
+<Noteer hier je activiteiten, gevonden informatie, behaalde milestones, 
+belangrijke gebeurtenissen, problemen, oplossingen...
+Zet voor elke nieuwe entry op een aparte lijn je naam en de datum.
+Als je dat wil, mag je de zuiver technische informatie in een aanvullend 'technisch logboek'
+bijhouden (binnen je repository). In dat geval kan je hier bij de verschillende entries verwijzen
+naar dat technisch logboek.>
+
+
+
+
+
+
+
+
+
+
+
+
+=================================================================================
+Eerste tussenrapportering - <datum van ingave>
+=================================================================================
+
+Stand van zaken:
+
+<Geef hier een korte stand van zaken van wat er gebeurd is sinds de start: 
+Wat is er gerealiseerd? Wat moet nog gebeuren? Wat zijn bijzondere gebeurtenissen?
+Wat zijn problemen die je nog moet oplossen?>
+
+Reflectie:
+
+<Hoe werkt je aanpak? Waar had je achteraf gezien beter anders te werk kunnen gaan?
+Hoe ga je eventueel bijsturen? Welke aanpassingen zijn er nodig in je planning?>
+
+
+Zelfevaluatie:
+
+<Geef jezelf hier een score (gaande van 'NVT' tot 'A') voor de items die in het 
+evaluatiedocument een witte achtergrond hebben>
+
+
+Feedback vanwege mentor - <datum van ingave>:
+(Laat steeds de feedback van de mentor in het opvolgingsdocument staan tot het einde
+van het opleidingsonderdeel.) 
+
+<Hier komt de feedback en opmerkingen vanwege de mentor>
+
+
+
+=================================================================================
+(optioneel) Tweede tussenrapportering - <datum van ingave>
+=================================================================================
+
+Stand van zaken:
+
+<Geef hier een korte stand van zaken van wat er gebeurd is sinds vorige tussenrapportering: 
+Wat is er gerealiseerd? Wat moet nog gebeuren? Wat zijn bijzondere gebeurtenissen?
+Wat zijn problemen die je nog moet oplossen?>
+
+Reflectie:
+
+<Hoe werkt je aanpak? Waar had je achteraf gezien beter anders te werk kunnen gaan?
+Hebben vroegere bijsturingen het gewenste effect? Wat wil je nog wijzigen in je aanpak of planning?>
+
+
+Zelfevaluatie:
+
+<Geef jezelf hier een score (gaande van 'NVT' tot 'A') voor de items die in het 
+evaluatiedocument een witte achtergrond hebben>
+
+
+Feedback vanwege mentor - <datum van ingave>:
+
+<Hier komt de feedback en opmerkingen vanwege de mentor>
+
+
+
+=================================================================================
+Eindrapportering - <datum van ingave>
+=================================================================================
+
+
+Eindrapportering:
+
+<Geef hier een eindstand van wat je bereikt hebt (en wat niet).
+Hierin verwijs je ook naar eventuele bijkomende documenten of informatie om dit te onderbouwen.>
+
+Reflectie:
+
+<Geef hier een reflectie over je aanpak, je originele einddoelen, en je resultaat: Wat was goed?
+ Wat had beter gekund? Waren er alternatieven voor je aanpak? Wat zou je achteraf gezien anders
+ gedaan hebben? Hoe zou je je nog verder kunnen profileren in de richting van je onderwerp? >
+
+
+Inhoud Portfolio:
+
+<Geef hier een overzicht van de informatie die je portfolio bevat> 
+
+
+Bronnenlijst:
+
+<Geef hier een lijst van gebruikte bronnen volgens de IEEE-standaard>
+
+Zelfevaluatie:
+
+<Geef jezelf hier een score (gaande van 'NVT' tot 'A') voor de items die in het 
+evaluatiedocument een witte achtergrond hebben>
+
+
+
+
+
+
+
+
