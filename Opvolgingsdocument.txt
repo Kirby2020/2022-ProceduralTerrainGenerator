@@ -9,7 +9,7 @@ Persoonlijk ontwikkelingsplan (POP) - opvolgingsdocument Academiejaar 2022-2023
 
 Student:	Jonathan Vercammen
 
-Mentor:		<in te vullen door de mentor>
+Mentor:		Joris Maervoet
 
 
 =================================================================================
@@ -101,6 +101,23 @@ Wie weet kan ik misschien hierna nog verder de game uitbreiden afhankelijk van h
 Ofwel is dit de start van nog vele andere games.
 
 
+Feedback mentor - 27/09/2022
+----------------------------
+Dag Jonathan,
+
+- de belangrijkste bedoeling van POP is niet om een leuke toepassing te maken. De nadruk van POP ligt zowel op kennisverwerving als op de toepassing ervan. Daarom verwachten we één of meerdere einddoelen die specifiek gericht zijn op het gestructureerd bijleren van een aantal zaken (die heb je niet). We willen daar echt kunnen lezen wát je wil bijleren en hoe je dat zal doen (cursus, eigen verzameling tutorials/documentatie, boek, conferentie, .... ) en hoe je dat zal bewijzen (certificaat, notities, gemaakte oefeningen, een rapport, ....).
+
+- we kijken dan in de eerste plaats naar de zaken die je gaat bijleren. Opgelet:
+  - het louter leren gebruiken van een tool/programma (Trello, ...) vinden we niet geschikt voor POP
+  - het louter leren werken met een game engine (Unity, ...) vinden we niet geschikt voor POP
+  - het louter aanleren van een andere programmeertaal vinden we niet geschikt voor POP
+  ik vrees dus dat je onderwerp niet geschikt is voor POP, tenzij je een hele andere leerinsteek hebt die bv. vertrekt van AI/path finding of bv. van een studie van design patterns ...
+
+- Je einddoelen/evaluatiecriteria (SMART!) zijn onvoldoende meetbaar/toetsbaar en onvoldoende concreet. Hou hier rekening mee als je je voorstel aanpast!
+
+Samengevat: ik vrees dus dat we dit onderwerp niet kunnen toelaten, tenzij je een andere insteek hebt.
+
+Bekijk jij dit en pas je je voorstel aan? Alvast bedankt.
 
 
 =================================================================================
