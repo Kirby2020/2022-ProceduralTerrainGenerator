@@ -13,52 +13,39 @@ Mentor:		Joris Maervoet
 
 
 =================================================================================
-Beschrijving - datum 24/09/2022 
+Beschrijving - datum (1) 24/09/2022 	(2) 29/09/2022
 =================================================================================
 
 Onderwerp:
 
-	Volledig afgewerkte indie game of VR-demo.
+	2D/3D procedureel gegenereerd terrein (Procedurally Generated Terrain: PGT) 
 
 
 Einddoelen (met evaluatiecriteria):
 
 1. einddoel 1
-	Professioneel afgewerkt spel maken
-		- Eenvoudig prototype maken
-		- Afwerken tot een compleet geheel
+	Toepassen van PGT
+		- Demo maken waarbij terrein wordt gegenereerd met verschillende instelbare parameters om te zien wat het effect ervan is. (minstens vijf)
 2. einddoel 2
-	Dit spel online beschikbaar zetten
-		- Staat ergens online beschikbaar voor download. Op een eigen site of op een bestaand platform zoals Steam.
+	Begrijpen en kunnen uitleggen hoe PGT werkt
+		- Verslag schrijven over de werking van PGT. (minstens zeven bladzijdes?)
 3. einddoel 3
-	Programmeerconcepten/design patterns gebruiken in de context van game development.
-		- Gebruik van een geschreven state machine
-		- Gebruik van een geschreven AI?
-4. einddoel 4
-	Efficiënt leren werken met een project planning tool zoals Trello, Gantt of ClickUp
-		- Regelmatige deadlines instellen en opvolgen
-		- Roadmap/planning voor latere game-elementen
+	Leren over verschillende soorten random algoritmen, noise generators
+		- Zoeken op het internet naar verschillende noisefuncties en een kleine toepassing 			schrijven om het verschil te illustreren, eventueel gecombineerd met de demo.
+		- Extra uitleg over minstens twee (drie?) noisefuncties met voor- en nadelen.
+		
 		
 
 Motivatie - betrokkenheid:
 
-Ik ben al heel lang geïnteresseerd in gaming en heb altijd al zelf mijn eigen games willen maken.
-In de middelbare school probeerde ik al een beetje te programmeren door de "voor dummy"-boeken te lezen van JavaScript en Unity.
-Hiermee geraakte ik niet echt ver en door de drukte van school is dit stillaan verdwenen.
-
-Uiteindelijk zat ik op de hoge school en kon ik al snel een simpele Pong-game maken. Toen zag ik dat dit echt was wat mij interesseerde aan programmeren.
-Vorig jaar voor een groepswerk hebben wij een multiplayer tower defense game gemaakt. Dit vond ik het leukste project tot nu toe.
-Alleen is het jammer genoeg niet zo afgewerkt als ik had gehoopt door het gebrek aan inzet van sommige groepsleden...
-
-Met dit vak wil ik mijzelf bewijzen dat ik wel degelijk een game kan maken dat volledig functioneel is.
-Uiteraard verwacht ik niet de volgende Undertale of Fall Guys te maken maar ik hoop toch op een game waar veel mensen zich mee bezig kunnen houden.
+Deze keer kies ik ervoor om een complexer topic in game development aan te pakken.
+Ik heb altijd al interesse gehad voor games die zo goed als oneindig aanvoelen maar nooit saai zijn.
 
 
 
 Motivatie - grenzen verleggen:
 
-Ik heb nog nooit een game gemaakt waar ik echt blij mee was. De afwerking was er nooit of er zaten nog te veel bugs in.
-Bij deze wil ik mijzelf pushen in game development en een echte volledig afgwerkte game presenteren.
+PGT is iets helemaal nieuws voor mij maar ik hoop dat ik deze techniek kan beheersen voor gebruik in latere projecten.
 
 
 
@@ -72,13 +59,13 @@ kerndoelen:
 
 1.a: 	De student realiseert onderstaande kerndoelen binnen het deelgebied van de
 	programmatie en gegevensbanken. 
-2.b: 	De student kan voor een concreet probleem een oplossing ontwikkelen die voldoet aan
-	de vooropgestelde eisen. 
+2.a:	De student kan zelfstandig een complex technologisch probleem opsplitsen in een aantal
+	concrete en hanteerbare deelproblemen. 
+3.b: 	De student kan de goede werking van een complex systeem evalueren. 
 6.e:  	De student kan een voorgestelde aanpak, oplossing of aanbeveling op een
 	gestructureerde manier verantwoorden op basis van eigen onderzoek, kennis en inzicht
 	en beoordeling van voor- en nadelen.
-(7.h): 	De student kan een adequate tijdsplanning opstellen om de eigen taken uit te voeren
-	binnen het kader van de globale planning van het (team). 
+8.i:	De student maakt een duidelijk verslag van uitgevoerde taken en opgestelde conclusies.
 10.m:	De student kan tekorten in de eigen kennis of competentie identificeren en neemt
 	initiatief om ze te remediëren. 
 10.n:	De student verzamelt voldoende informatie over nieuwe ontwikkelingen binnen een
@@ -87,18 +74,15 @@ kerndoelen:
 
 Werkvormen:
 
-Eerst ga ik brainstormen over een game-idee: welk genre? Welke functionaliteiten (AI...).
-Dan ga ik een roadmap maken met alle deadlines die ik graag zou halen.
-Vervolgens ga ik op zoek op het internet naar informatie over de technologieën die ik wil gebruiken in mijn game en evenuteel een aantal dev logs bekijken
-om te zien hoe anderen dit doen. 
-Daarna ga ik op zoek naar assets, eventueel zelfgemaakt, voor graphics, geluid...
-Dan begin ik met het prototype en kijk ik of mijn idee haalbaar is.
-Nadien zet ik het prototype om in speelbare game en werk ik de core gameplay af.
-Vervolgens begin ik de testfase en steek ik extra functies in de game.
-Ten slotte kijk ik of ik de game online kan zetten. Eventueel met een zelfgeschreven website.
+Eerst ga ik op zoek naar informatie over PGT en verschillende noisefuncties.
+Aansluitend kan ik die informatie al in het verslag verwerken.
 
-Wie weet kan ik misschien hierna nog verder de game uitbreiden afhankelijk van het idee dat ik kies.
-Ofwel is dit de start van nog vele andere games.
+Daarna zal ik experimenteren met noisefuncties in Unity en proberen omo iets visueels te kunnen tonen. Evenuteel ook al verschillende noisefuncties vergelijken met elkaar.
+
+Nadat ik voldoende informatie heb verzameld, ga ik aan de slag met mijn hoofdproject: terrein genereren. Dit kan op twee manieren: ofwel puntsgewijs om een natuurlijk terrein te vormen of ik kan terrein genereren met verchillende vormen zoals bv. in Minecraft.
+Vanaf ik een grondige basis heb, kan ik verder uitbreiden met extra "materialen" of elementen die ik kan sturen met parameters.
+
+Ten slotte werk ik mijn verslag verder af met alle ervaring die ik heb opgedaan tijdens dit project.
 
 
 Feedback mentor - 27/09/2022
