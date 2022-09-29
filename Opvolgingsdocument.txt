@@ -104,6 +104,15 @@ Samengevat: ik vrees dus dat we dit onderwerp niet kunnen toelaten, tenzij je ee
 Bekijk jij dit en pas je je voorstel aan? Alvast bedankt.
 
 
+Feedback mentor - 29/09/2022
+----------------------------
+Dag Jonathan,
+je hebt dit voorstel sterk verbeterd. Super!
+Het enige waar ik nu nog mee zit is de moeilijkheidsgraad (PGT en random algoritmen zijn meestal eenvoudigere algoritmen) en de hoeveelheidwerk (+/- 100u verwacht). Want worst case zoek je in een paar uurtjes een paar algoritmen op, plaats je ze in het verslag, en maak je op een halve dag een demo van het makkelijkste algoritme.
+Kan je daarom ergens aangeven welke cursussen/tutorials/bronnen (of welke stukken ervan) je in je verslagen zal verwerken? (het kan geen kwaad om eens een beetje meer de theoretisch kant op te zoeken zie bv http://pcgbook.com/)
+
+
+
 =================================================================================
 Planning - <datum van eerste ingave> (op te stellen nadat je voorstel is goedgekeurd)
 =================================================================================
