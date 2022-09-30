@@ -85,6 +85,30 @@ Vanaf ik een grondige basis heb, kan ik verder uitbreiden met extra "materialen"
 Ten slotte werk ik mijn verslag verder af met alle ervaring die ik heb opgedaan tijdens dit project.
 
 
+Antwoord feedback 29/09/2022:
+Ik ben nog niet volledig zeker welke bronnen ik ga gebruiken maar na een beetje rond te zoeken heb ik toch een redelijke lijst opgestelt.
+De site van PCGBook lijkt mij ook interresant om eens door te nemen. Dan kijk ik vooral naar hoofdstukken 1, 2, 4 en 5.
+Artikels:
+	- http://pcgbook.com/
+	- https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
+	- https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/
+	- (Thesis) https://s3.eu-central-1.amazonaws.com/ucu.edu.ua/wp-content/uploads/sites/8/2021/07/	Melnychuk-Vladyslav_188572_assignsubmission_file_VladyslavMelnychuk.pdf
+
+Videos informatie 
+	Algemeen:
+		- How does procedural generation work? | Bitwise (https://www.youtube.com/watch?v=-POwgollFeY)
+		- Procedural World Generation | How does it work? (https://www.youtube.com/watch?v=Pgt82G4Jxac)
+		- How Procedurally Generated Terrain Works (https://www.youtube.com/watch?v=JdYkcrW8FBg)
+	Gamespecifiek (Minecraft)
+		- THIS is how Minecraft Works 💎⛏️ (https://www.youtube.com/watch?v=YyVAaJqYAfE)
+		- How Minecraft Generates Massive Virtual Worlds from Scratch (https://www.youtube.com/watch?v=FcxYTe31isA)
+		- Minecraft terrain generation in a nutshell (https://www.youtube.com/watch?v=CSa5O6knuwI)
+Tutorials
+	- Infinite Procedural Terrain in Unity (https://www.youtube.com/watch?v=f9uueg_AUZs)
+	- (Serie) Procedural voxel terrain generation in Unity #1 - Creating a cube! (https://www.youtube.com/watch?v=lyDJPVp7Oc8)
+	- (Serie) Unity Voxels - Procedural Generation Tutorial - Part 1: The First Cube (https://www.youtube.com/watch?v=EubjobNVJdM)
+
+
 Feedback mentor - 27/09/2022
 ----------------------------
 Dag Jonathan,
