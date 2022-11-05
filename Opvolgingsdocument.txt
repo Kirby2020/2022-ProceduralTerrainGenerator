@@ -143,10 +143,26 @@ goedgekeurd! veel succes!
 
 
 =================================================================================
-Planning - <datum van eerste ingave> (op te stellen nadat je voorstel is goedgekeurd)
+Planning - 05-11-2022 (op te stellen nadat je voorstel is goedgekeurd)
 =================================================================================
 
 <Hou hier je werkplanning bij, op te stellen nadat je voorstel is goedgekeurd>
+
+Deadline 1: zondag 20 november
+	Theoretische uitleg verslag klaar t.e.m. hoofdstuk 3 Perlin noise
+	Unity demo's van random noise, value noise, simplex noise, Perlin noise en fractal noise
+Deadline 2: zondag 27 november
+	Beginnen aan hoofdstuk 4 Procedurally generated terrain
+	Eerste kubus maken
+	Vlak oneindig landschap met die kubus maken
+Deadline 3: zondag 11 december
+	Perlin noise implementeren in terrain generation
+Deadline 4: zondag 25 december
+	Terrein verbeteren met fractal noise, gebruik van parameters!
+Deadline 5: zondag 8 januari
+	Verslag compleet
+	Volledige Unity-applicatie waarin je een wereld kan maken met een seed.
+	Aan de hand daarvan wordt een wereld gegenereerd.
 
 
 =================================================================================
