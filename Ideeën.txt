@@ -1,0 +1,19 @@
+Unity project procedurally generated terrain
+
+- Terrein
+	- Vorm
+		- Biomes
+			- Planes
+			- Hills
+			- Desert
+			- Snow
+			- Sea
+	- Decoratie
+		- Bloemen
+		- Bomen
+		- Rivieren
+- Functioneel
+	- Wereld genereren
+	- Blokken breken?
+	- Wereld opslaan (seed)
+	- Wereld laden
