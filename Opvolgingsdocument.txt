@@ -177,13 +177,10 @@ bijhouden (binnen je repository). In dat geval kan je hier bij de verschillende 
 naar dat technisch logboek.>
 
 
-
-
-
-
-
-
-
+16-10: 	Schrijven hoofdstuk 2.1 Noisefuncties - Introductie
+5-11:	Schrijven hoofdstuk 2.2 Noisefuncties - Noise
+	Schrijven hoofdstuk 2.3 Noisefuncties - Random Number Generator (RNG)
+	Schrijven hoofdstuk 2.4 Noisefuncties - Random noise
 
 
 
