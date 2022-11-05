@@ -185,7 +185,7 @@ naar dat technisch logboek.>
 
 
 =================================================================================
-Eerste tussenrapportering - <datum van ingave>
+Eerste tussenrapportering - 05-11-2022
 =================================================================================
 
 Stand van zaken:
@@ -194,11 +194,28 @@ Stand van zaken:
 Wat is er gerealiseerd? Wat moet nog gebeuren? Wat zijn bijzondere gebeurtenissen?
 Wat zijn problemen die je nog moet oplossen?>
 
+	Qua informatie heb ik al veel opgezocht en ik begin noise en procedural generation beter te snappen.
+	Voor de rest is er eigenlijk niet veel gebeurd. Ik moet nog in mijn verslag het theoretisch deel verder uitwerken
+	en ook de minidemo's in Unity maken voor alles noisefuncties van het verslag.
+	Ook mijn procedurally generated terrain moet ik nog aan beginnen.
+
 Reflectie:
 
 <Hoe werkt je aanpak? Waar had je achteraf gezien beter anders te werk kunnen gaan?
 Hoe ga je eventueel bijsturen? Welke aanpassingen zijn er nodig in je planning?>
+	
+	Voorlopig ben ik niet blij met hoever ik sta maar volgens mij heeft dit veel te maken met de hoeveelheid tijd die ik
+	in andere vakken moet steken. Gelukkig komt er stillaan een einde aan al het werk.
 
+	In het begin ging het verslag zeer moeizaam omdat ik niet zo goed ben in het schrijven van onpersoonlijke teksten.
+	Dit begint nu gelukkig beter te gaan dus ik verwacht niet al te veel problemen meer.
+	
+	Voor Mobile App Development ga ik meer focussen op het project en minder op de labo's aangezien die op weinig punten staan.
+	Voor Applied Programming heb ik net mijn laatste labo afgekregen dus daar ben ik ook van af.
+	
+	Binnen twee weken is er een sperweek die ik volledig kan en ga inzetten voor dit vak en Mobile App Development.
+	Na het einde van de sperweek verwacht ik zeker klaar te zijn met alle theoretische uitleg in het verslag samen met de bijhorende
+	minidemo's in Unity. Eventueel kan ik al beginnen met het grote project: de procedurally generated terrain.
 
 Zelfevaluatie:
 
