@@ -181,6 +181,7 @@ naar dat technisch logboek.>
 5-11:	Schrijven hoofdstuk 2.2 Noisefuncties - Noise
 	Schrijven hoofdstuk 2.3 Noisefuncties - Random Number Generator (RNG)
 	Schrijven hoofdstuk 2.4 Noisefuncties - Random noise
+6-11	Schrijven hoofdstuk 2.5 Noisefuncties - Value noise - inleiding
 
 
 
