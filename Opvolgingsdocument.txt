@@ -223,6 +223,7 @@ Zelfevaluatie:
 <Geef jezelf hier een score (gaande van 'NVT' tot 'A') voor de items die in het 
 evaluatiedocument een witte achtergrond hebben>
 
+	(zie document 'Tussentijdse Evaluatiedocument 5-11 POP.pdf', dit had ik beter op voorhand gezet)
 
 Feedback vanwege mentor - 09/11/2022:
 
