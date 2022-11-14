@@ -164,6 +164,41 @@ Deadline 5: zondag 8 januari
 	Volledige Unity-applicatie waarin je een wereld kan maken met een seed.
 	Aan de hand daarvan wordt een wereld gegenereerd.
 
+=================================================================================
+Planning - 14-11-2022 
+=================================================================================
+
+Sperweek (14/11 - 20/11)
+	Verslag verder schrijven t.e.m. hoofdstuk 3 Perlin noise
+	Unity demo's maken van random noise, value noise, simplex noise, Perlin noise en fractal noise
+
+Week 8 (21/11 - 27/11)
+	Beginnen aan hoofdstuk 4 Procedurally generated terrain
+	Starten met hoofd-Unity-project (PGT):
+	Eerste kubus maken en deze gebruiken om een vlak oneindig landschap te maken
+
+Week 9 (28/11 - 4/12)
+	Terrein laten variëren met parameters zoals seed
+	Experimenteren met verschillende noisefuncties en kijken welke het beste resultaat oplevert
+
+Week 10 (5/12 - 11/12)
+	Noise parameters opstellen voor de verschillende lagen noise
+	Deze parameters in het project integreren
+	Maken van andere soorten blokken voor extra variatie (biomes)
+
+Week 11 (12/12 - 18/12)
+	
+	Andere blokken gebruiken op basis van een noise map (biomes)
+	Parameters fine-tunen	
+
+Week 12 (19/12 - 25/12)
+	Rivieren en andere decoraties toevoegen
+
+Kerstvakantie (26/12 - 1/01)
+	Laatste details afwerken
+
+Kerstvakantie (2/01 - 8/01)
+	Laatste details afwerken	
 
 =================================================================================
 Logboek
