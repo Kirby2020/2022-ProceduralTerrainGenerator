@@ -219,6 +219,8 @@ naar dat technisch logboek.>
 6-11:	Schrijven hoofdstuk 2.5 Noisefuncties - Value noise - inleiding
 14-11:	Beginnen Unity demo random noise
 	Beginnen Unity demo value noise
+15-22: 	Schrijven hoofdstuk 2.5.1 Noisefuncties - Value noise - Werking
+	
 	
 
 
