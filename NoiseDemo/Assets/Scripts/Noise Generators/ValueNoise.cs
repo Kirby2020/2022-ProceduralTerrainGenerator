@@ -60,4 +60,8 @@ public class ValueNoise : INoise {
     public void SetSeed(int seed) {
         this.seed = seed;
     }
+
+    public void SetScale(int scale) {
+        this.cellSize = scale;
+    }
 }

@@ -7,6 +7,7 @@ using UnityEngine;
 public class RandomNoise : INoise {
     private float[,] noiseMap;
     private int seed = 0;
+    private int scale = 1;
 
     public float GetNoiseValue(int x, int y) {
         return noiseMap[x, y];
@@ -16,12 +17,16 @@ public class RandomNoise : INoise {
         this.seed = seed;
     }
 
+    public void SetScale(int scale) {
+        this.scale = scale;
+    }
+
     public void GenerateNoiseMap(int sizeX, int sizeY) {
         noiseMap = new float[sizeX, sizeY];
         Random.InitState(seed);
 
-        for (int x = 0; x < sizeX; x++) {
-            for (int y = 0; y < sizeY; y++) {
+        for (int x = 0; x < sizeX; x += scale) {
+            for (int y = 0; y < sizeY; y += scale) {
                 noiseMap[x, y] = Random.value;
             }
         }

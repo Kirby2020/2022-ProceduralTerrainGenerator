@@ -3,5 +3,7 @@
 
     void SetSeed(int seed);
 
+    void SetScale(int scale);
+
     void GenerateNoiseMap(int x, int y);
 }

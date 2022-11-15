@@ -15,12 +15,12 @@ public class NoiseTexture : MonoBehaviour {
 
     [SerializeField] private NoiseType noiseGeneratorType;
     [SerializeField, SerializeReference] private INoise noiseGenerator;
-    [SerializeField] private int seed;
+    [SerializeField, Range(0, 1000)] private int seed = 0;
+    [SerializeField, Range(1, 100)] private int noiseScale = 1;
     
     private void Awake() {
         textureSize = new Vector2Int(100, 100);
         previewSize = new Vector2(800, 800);
-        SetNoiseGenerator();
     }
 
     private void Start() {
@@ -28,9 +28,13 @@ public class NoiseTexture : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        SetNoiseGenerator();
         noisePreview.GetComponent<RectTransform>().sizeDelta = previewSize;
+        
+        SetNoiseGenerator();
+        noiseGenerator.SetSeed(seed);
+        noiseGenerator.SetScale(noiseScale);
         noiseGenerator.GenerateNoiseMap(textureSize.x, textureSize.y);
+        
         noisePreview.texture = GenerateTexture();
     }
 
@@ -57,7 +61,6 @@ public class NoiseTexture : MonoBehaviour {
             case NoiseType.Perlin_Noise: break;
             default: noiseGenerator = new RandomNoise(); break;
         }
-        noiseGenerator.SetSeed(seed);
     }
 
     [ContextMenu("Generate seed")]
