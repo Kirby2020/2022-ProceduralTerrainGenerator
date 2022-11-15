@@ -1,6 +1,12 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary> 
+/// 
+/// This class is used to generate a texture from a noise map
+/// The type of noise can be chosen in the inspector
+/// 
+/// </summary>
 public class NoiseTexture : MonoBehaviour {
     [SerializeField] private RawImage noisePreview;
     [SerializeField] private Vector2 previewSize;
@@ -13,7 +19,7 @@ public class NoiseTexture : MonoBehaviour {
     
     private void Awake() {
         textureSize = new Vector2Int(100, 100);
-        previewSize = new Vector2(300, 300);
+        previewSize = new Vector2(800, 800);
         SetNoiseGenerator();
     }
 
@@ -22,6 +28,7 @@ public class NoiseTexture : MonoBehaviour {
     }
 
     private void FixedUpdate() {
+        SetNoiseGenerator();
         noisePreview.GetComponent<RectTransform>().sizeDelta = previewSize;
         noiseGenerator.GenerateNoiseMap(textureSize.x, textureSize.y);
         noisePreview.texture = GenerateTexture();
@@ -46,17 +53,15 @@ public class NoiseTexture : MonoBehaviour {
     private void SetNoiseGenerator() {
         switch (noiseGeneratorType) {
             case NoiseType.Random_Noise: noiseGenerator = new RandomNoise(); break;
-            case NoiseType.Value_Noise: break;
+            case NoiseType.Value_Noise: noiseGenerator = new ValueNoise(); break;
             case NoiseType.Perlin_Noise: break;
             default: noiseGenerator = new RandomNoise(); break;
         }
-
-        noiseGenerator.SetSeed(10);
+        noiseGenerator.SetSeed(seed);
     }
 
     [ContextMenu("Generate seed")]
     private void SetSeed() {
         seed = Random.Range(0, 1000);
-        noiseGenerator.SetSeed(seed);
     }
 }

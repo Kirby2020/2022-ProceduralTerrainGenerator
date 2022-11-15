@@ -452,11 +452,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   noisePreview: {fileID: 0}
-  textureSize: {x: 0, y: 0}
   previewSize: {x: 0, y: 0}
-  noiseGeneratorType: 0
+  textureSize: {x: 0, y: 0}
+  noiseGeneratorType: 1
   noiseGenerator:
     id: 0
+  seed: 0
   references:
     version: 1
     00000000:
