@@ -221,7 +221,10 @@ naar dat technisch logboek.>
 	Beginnen Unity demo value noise
 15-11: 	Schrijven hoofdstuk 2.5.1 Noisefuncties - Value noise - Werking
 16-11: 	Herschikken hoofdstukken perlin-, simplex- en fractal noise
-	
+		Na verder onderzoek besluit ik om niet al te theoretisch in te gaan op Perlin/simplex noise. 
+		Dit zou veel te lang duren en is net iets te complex voor mij om te begrijpen.
+		https://adrianb.io/2014/08/09/perlinnoise.html
+		Voorlopig houd ik mij bij een basisuitleg. Zaken zoals fractal noise zullen belangrijker zijn voor procedural generation.
 	
 	
 
