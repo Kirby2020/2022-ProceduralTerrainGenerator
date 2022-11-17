@@ -58,7 +58,8 @@ public class NoiseTexture : MonoBehaviour {
         switch (noiseGeneratorType) {
             case NoiseType.Random_Noise: noiseGenerator = new RandomNoise(); break;
             case NoiseType.Value_Noise: noiseGenerator = new ValueNoise(); break;
-            case NoiseType.Perlin_Noise: break;
+            case NoiseType.Perlin_Noise: noiseGenerator = new PerlinNoise(); break;
+            case NoiseType.Simplex_Noise: break;
             default: noiseGenerator = new RandomNoise(); break;
         }
     }
