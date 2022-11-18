@@ -25,16 +25,11 @@ public class NoiseTexture : MonoBehaviour {
 
     private void Start() {
         noisePreview = GetComponent<RawImage>();
+        SetNoiseGenerator();
     }
 
     private void FixedUpdate() {
         noisePreview.GetComponent<RectTransform>().sizeDelta = previewSize;
-        
-        SetNoiseGenerator();
-        noiseGenerator.SetSeed(seed);
-        noiseGenerator.SetScale(noiseScale);
-        noiseGenerator.GenerateNoiseMap(textureSize.x, textureSize.y);
-        
         noisePreview.texture = GenerateTexture();
     }
 
@@ -62,10 +57,14 @@ public class NoiseTexture : MonoBehaviour {
             case NoiseType.Simplex_Noise: break;
             default: noiseGenerator = new RandomNoise(); break;
         }
+
+        noiseGenerator.SetSeed(seed);
+        noiseGenerator.SetScale(noiseScale);
+        noiseGenerator.GenerateNoiseMap(textureSize.x, textureSize.y);
     }
 
-    [ContextMenu("Generate seed")]
-    private void SetSeed() {
-        seed = Random.Range(0, 1000);
+    [ContextMenu("Update noise")]
+    private void UpdateNoise() {
+        SetNoiseGenerator();
     }
 }

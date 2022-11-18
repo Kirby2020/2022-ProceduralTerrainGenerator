@@ -39,16 +39,16 @@ public class PerlinNoise : INoise {
         // Generate noise values for each coordinate
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                noiseMap[i, j] = PerlinNoise2D(i, j);
+                noiseMap[i, j] = PerlinNoise2D((float)i / scale, (float)j / scale);
             }
         }        
     }
 
-    private float PerlinNoise2D(int i, int j) {
+    private float PerlinNoise2D(float i, float j) {
         // Get the 4 surrounding grid points coordinates
-        int x0 = i - i % scale;                         // Left
+        int x0 = Mathf.FloorToInt(i - i % scale);                         // Left
         int x1 = (x0 + scale) % noiseMap.GetLength(0);  // Right
-        int y0 = j - j % scale;                         // Bottom
+        int y0 = Mathf.FloorToInt(j - j % scale);                         // Bottom
         int y1 = (y0 + scale) % noiseMap.GetLength(1);  // Top
 
         // Get the 4 grid point coordinates
