@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// C implementation of Perlin noise converted to C#.
@@ -57,46 +57,18 @@ public class PerlinNoise : INoise {
         }        
     }
 
-    private float PerlinNoise2D(float i, float j) {
-        // Get the 4 surrounding grid points coordinates
-        int x0 = Mathf.FloorToInt(i - i % scale);                         // Left
-        int x1 = (x0 + scale) % noiseMap.GetLength(0);  // Right
-        int y0 = Mathf.FloorToInt(j - j % scale);                         // Bottom
-        int y1 = (y0 + scale) % noiseMap.GetLength(1);  // Top
+    private float PerlinNoise2D(float x, float y) {
+        int xi = (int)x & 255;                              // Calculate the "unit cube" that the point asked will be located in
+        int yi = (int)y & 255;                              // The left bound is ( |_x_|,|_y_| ) and the right bound is that
+        double xf = x-(int)x;
+        double yf = y-(int)y;
 
-        // Get the 4 grid point coordinates
-        Vector2Int[] gridPoints = new Vector2Int[4] {
-            new Vector2Int(x0, y0),
-            new Vector2Int(x1, y0),
-            new Vector2Int(x0, y1),
-            new Vector2Int(x1, y1)
-        };
-
-        // get the distance vector from each grid point to the current point
-        Vector2[] distanceVectors = new Vector2[4];
-        for (int k = 0; k < 4; k++) {
-            distanceVectors[k] = new Vector2(i, j) - gridPoints[k];
-        }
-
-        // Get the dot product of the distance vectors and the gradients
-        float[] dotProducts = new float[4];
-        for (int k = 0; k < 4; k++) {
-            dotProducts[k] = Vector2.Dot(distanceVectors[k], gradients[Hash(gridPoints[k].x, gridPoints[k].y) % gradients.Length]);
-        }
-
-        // interpolate the dot products
-        float xLerp = (i - x0) / (float)scale;
-        float yLerp = (j - y0) / (float)scale;
-
-        float top = Mathf.Lerp(dotProducts[0], dotProducts[1], xLerp);
-        float bottom = Mathf.Lerp(dotProducts[2], dotProducts[3], xLerp);
-
-        return Mathf.Lerp(top, bottom, yLerp);
+        return 0;
     }
     
     // Perlin hash function
     private int Hash(int x, int y) {
-        return PERMUTATION[PERMUTATION[x % PERMUTATION.Length] + y % PERMUTATION.Length]; 
+        return permutation[permutation[x % permutation.Length] + y % permutation.Length]; 
     }
 
     public float GetNoiseValue(int x, int y) {

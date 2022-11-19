@@ -30,7 +30,7 @@ public class NoiseTexture : MonoBehaviour {
 
     private void FixedUpdate() {
         noisePreview.GetComponent<RectTransform>().sizeDelta = previewSize;
-                noiseGenerator.SetSeed(seed);
+        noiseGenerator.SetSeed(seed);
         noiseGenerator.SetScale(noiseScale);
         noiseGenerator.GenerateNoiseMap(textureSize.x, textureSize.y);
         noisePreview.texture = GenerateTexture();
@@ -58,7 +58,7 @@ public class NoiseTexture : MonoBehaviour {
             case NoiseType.Value_Noise: noiseGenerator = new ValueNoise(); break;
             case NoiseType.Perlin_Noise: noiseGenerator = new PerlinNoise(); break;
             case NoiseType.Default_Perlin_Noise: noiseGenerator = new DefaultPerlinNoise(); break;
-            case NoiseType.Simplex_Noise: break;
+            case NoiseType.Simplex_Noise: noiseGenerator = new SimplexNoise(); break;
             default: noiseGenerator = new RandomNoise(); break;
         }
 
