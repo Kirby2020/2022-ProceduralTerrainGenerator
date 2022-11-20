@@ -225,6 +225,9 @@ naar dat technisch logboek.>
 		Dit zou veel te lang duren en is net iets te complex voor mij om te begrijpen.
 		https://adrianb.io/2014/08/09/perlinnoise.html
 		Voorlopig houd ik mij bij een basisuitleg. Zaken zoals fractal noise zullen belangrijker zijn voor procedural generation.
+19-11: 	Schrijven hoofdstuk 2.6 Perlin noise
+20-11:	Schrijven hoofdstuk 2.7 Simplex noise
+	Schrijven hoofdstuk 3	Fractal noise	
 	
 	
 

@@ -4,4 +4,5 @@
     Perlin_Noise,
     Simplex_Noise,
     Default_Perlin_Noise,
+    Fractal_Noise,
 }

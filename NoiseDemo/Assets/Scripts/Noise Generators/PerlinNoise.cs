@@ -40,17 +40,6 @@ public class PerlinNoise : INoise
         }
     }
 
-    private Vector2[] gradients = new Vector2[8] {
-        new Vector2(1, 0),
-        new Vector2(-1, 0),
-        new Vector2(0, 1),
-        new Vector2(0, -1),
-        new Vector2(1, 1).normalized,
-        new Vector2(-1, 1).normalized,
-        new Vector2(1, -1).normalized,
-        new Vector2(-1, -1).normalized
-    };
-
     public double Perlin(double x, double y, double z)
     {
         int xi = (int)x & 255;                              // Calculate the "unit cube" that the point asked will be located in
