@@ -16,7 +16,7 @@ public class NoiseTexture : MonoBehaviour {
     [SerializeField] private NoiseType noiseGeneratorType;
     [SerializeField, SerializeReference] private INoise noiseGenerator;
     [SerializeField, Range(0, 1000)] private int seed = 0;
-    [SerializeField, Range(1, 100)] private int noiseScale = 1;
+    [SerializeField, Range(1, 500)] private int noiseScale = 1;
     
     private void Awake() {
         textureSize = new Vector2Int(100, 100);

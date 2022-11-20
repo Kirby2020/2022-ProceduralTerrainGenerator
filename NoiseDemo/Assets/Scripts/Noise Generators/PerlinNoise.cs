@@ -4,15 +4,17 @@ using UnityEngine;
 /// C implementation of Perlin noise converted to C#.
 /// https://adrianb.io/2014/08/09/perlinnoise.html
 /// </summary>
-public class PerlinNoise : INoise {
+public class PerlinNoise : INoise
+{
     private float[,] noiseMap;
     private int seed = 0;
     private int scale = 10;
-    
+    private int repeat = 0;
+
     // Hash lookup table as defined by Ken Perlin.  This is a randomly
     // arranged array of all numbers from 0-255 inclusive.
-    private readonly int[] permutation = { 151,160,137,91,90,15,                        
-        131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,    
+    private readonly int[] permutation = { 151,160,137,91,90,15,
+        131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
         190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
         88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
         77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
@@ -26,15 +28,17 @@ public class PerlinNoise : INoise {
         138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
     };
 
-    private readonly int[] p;       
+    private readonly int[] p;
 
-    public PerlinNoise() {
+    public PerlinNoise()
+    {
         // Doubled permutation to avoid overflow
         p = new int[512];
-        for(int x=0;x<512;x++) {
-            p[x] = permutation[x%256];
+        for (int x = 0; x < 512; x++)
+        {
+            p[x] = permutation[x % 256];
         }
-    }                                             
+    }
 
     private Vector2[] gradients = new Vector2[8] {
         new Vector2(1, 0),
@@ -47,39 +51,105 @@ public class PerlinNoise : INoise {
         new Vector2(-1, -1).normalized
     };
 
-    public void GenerateNoiseMap(int x, int y) {
-        noiseMap = new float[x, y];
-        // Generate noise values for each coordinate
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                noiseMap[i, j] = PerlinNoise2D((float)i / scale, (float)j / scale);
-            }
-        }        
-    }
-
-    private float PerlinNoise2D(float x, float y) {
+    public double Perlin(double x, double y, double z)
+    {
         int xi = (int)x & 255;                              // Calculate the "unit cube" that the point asked will be located in
-        int yi = (int)y & 255;                              // The left bound is ( |_x_|,|_y_| ) and the right bound is that
-        double xf = x-(int)x;
-        double yf = y-(int)y;
+        int yi = (int)y & 255;                              // The left bound is ( |_x_|,|_y_|,|_z_| ) and the right bound is that
+        int zi = (int)z & 255;                              // plus 1.  Next we calculate the location (from 0.0 to 1.0) in that cube.
+        double xf = x - (int)x;                             // We also fade the location to smooth the result.
+        double yf = y - (int)y;
+        double zf = z - (int)z;
+        double u = Fade(xf);
+        double v = Fade(yf);
+        double w = Fade(zf);
 
-        return 0;
-    }
-    
-    // Perlin hash function
-    private int Hash(int x, int y) {
-        return permutation[permutation[x % permutation.Length] + y % permutation.Length]; 
+        int aaa, aba, aab, abb, baa, bba, bab, bbb;
+        aaa = p[p[p[xi] + yi] + zi];
+        aba = p[p[p[xi] + Increment(yi)] + zi];
+        aab = p[p[p[xi] + yi] + Increment(zi)];
+        abb = p[p[p[xi] + Increment(yi)] + Increment(zi)];
+        baa = p[p[p[Increment(xi)] + yi] + zi];
+        bba = p[p[p[Increment(xi)] + Increment(yi)] + zi];
+        bab = p[p[p[Increment(xi)] + yi] + Increment(zi)];
+        bbb = p[p[p[Increment(xi)] + Increment(yi)] + Increment(zi)];
+
+        double x1, x2, y1, y2;
+        x1 = Lerp(Gradient(aaa, xf, yf, zf),                // The gradient function calculates the dot product between a pseudorandom
+                    Gradient(baa, xf - 1, yf, zf),              // gradient vector and the vector from the input coordinate to the 8
+                    u);                                     // surrounding points in its unit cube.
+        x2 = Lerp(Gradient(aba, xf, yf - 1, zf),                // This is all then lerped together as a sort of weighted average based on the faded (u,v,w)
+                    Gradient(bba, xf - 1, yf - 1, zf),              // values we made earlier.
+                      u);
+        y1 = Lerp(x1, x2, v);
+
+        x1 = Lerp(Gradient(aab, xf, yf, zf - 1),
+                    Gradient(bab, xf - 1, yf, zf - 1),
+                    u);
+        x2 = Lerp(Gradient(abb, xf, yf - 1, zf - 1),
+                      Gradient(bbb, xf - 1, yf - 1, zf - 1),
+                      u);
+        y2 = Lerp(x1, x2, v);
+
+        return (Lerp(y1, y2, w) + 1) / 2;                       // For convenience we bound it to 0 - 1 (theoretical min/max before is -1 - 1)
     }
 
-    public float GetNoiseValue(int x, int y) {
-        return noiseMap[x, y];
+    public int Increment(int num)
+    {
+        num++;
+        if (repeat > 0) num %= repeat;
+
+        return num;
     }
 
-    public void SetScale(int scale) {
+    public static double Gradient(int hash, double x, double y, double z)
+    {
+        int h = hash & 15;                                  // Take the hashed value and take the first 4 bits of it (15 == 0b1111)
+        double u = h < 8 /* 0b1000 */ ? x : y;              // If the most significant bit (MSB) of the hash is 0 then set u = x.  Otherwise y.
+
+        double v;                                           // In Ken Perlin's original implementation this was another conditional operator (?:).  I
+                                                            // expanded it for readability.
+
+        if (h < 4 /* 0b0100 */)                             // If the first and second significant bits are 0 set v = y
+            v = y;
+        else if (h == 12 /* 0b1100 */ || h == 14 /* 0b1110*/)// If the first and second significant bits are 1 set v = x
+            v = x;
+        else                                                // If the first and second significant bits are not equal (0/1, 1/0) set v = z
+            v = z;
+
+        return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v); // Use the last 2 bits to decide if u and v are positive or negative.  Then return their addition.
+    }
+
+    public static double Fade(double t)
+    {
+        // Fade function as defined by Ken Perlin.  This eases coordinate values
+        // so that they will "ease" towards integral values.  This ends up smoothing
+        // the final output.
+        return t * t * t * (t * (t * 6 - 15) + 10);         // 6t^5 - 15t^4 + 10t^3
+    }
+
+    public static double Lerp(double a, double b, double x)
+    {
+        return a + x * (b - a);
+    }
+
+    public float GetNoiseValue(int x, int y)
+    {
+        double coordX = (float)(x * scale) / 1000;
+        double coordY = (float)(y * scale) / 1000;
+        return (float)Perlin(coordX, coordY, Time.deltaTime);
+    }
+
+    public void SetScale(int scale)
+    {
         this.scale = scale;
     }
 
-    public void SetSeed(int seed) {
+    public void SetSeed(int seed)
+    {
         this.seed = seed;
+    }
+
+    void INoise.GenerateNoiseMap(int x, int y)    {
+        return;
     }
 }
