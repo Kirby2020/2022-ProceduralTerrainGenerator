@@ -1,14 +1,14 @@
 ﻿using System;
 using UnityEngine;
 
-public static class FractalNoise {
+public class FractalNoise {
 	
-	private static int seed;
+	private int seed;
 	
 	/// <summary> 
 	///  The seed for the noise function. Randomized at startup by default.
 	/// </summary>
-	public static int Seed {
+	public int Seed {
 		get {
 			return seed;
 		}
@@ -19,13 +19,13 @@ public static class FractalNoise {
 		}
 	}
 
-    private static int octaves = 4;
+    private int octaves = 4;
 	
 	/// <summary> 
 	/// Number of octaves to use when generating combined noise octaves, higher number of octaves result in less blurry, more cloudy noise;
 	/// Value is clamped between 1 and 10. Higher values take longer to compute.
 	/// </summary>
-	public static int Octaves {
+	public int Octaves {
 		get {
 			return octaves;
 		}
@@ -37,16 +37,16 @@ public static class FractalNoise {
 	/// <summary> 
 	/// Value that defines how much higher octaves effect the end result in combined noise generation;
 	/// </summary>
-    public static double Amplitude = 1;
-    public static double Persistance = 0.5;
-    public static double Frequency = 1;
-    public static double Lacunarity = 2;
+    public double Amplitude = 1;
+    public double Persistence = 0.5;
+    public double Frequency = 1;
+    public double Lacunarity = 2;
 	
-	private static int[][] grad3 = {new int[]{1,1,0}, new int[]{-1,1,0}, new int[]{1,-1,0}, new int[]{-1,-1,0},
+	private int[][] grad3 = {new int[]{1,1,0}, new int[]{-1,1,0}, new int[]{1,-1,0}, new int[]{-1,-1,0},
 		new int[]{1,0,1}, new int[]{-1,0,1}, new int[]{1,0,-1}, new int[]{-1,0,-1},
 		new int[]{0,1,1}, new int[]{0,-1,1}, new int[]{0,1,-1}, new int[]{0,-1,-1}};
 	
-	private static int[][] grad4 = {new int[]{0,1,1,1}, new int[]{0,1,1,-1},  new int[]{0,1,-1,1},  new int[]{0,1,-1,-1},
+	private int[][] grad4 = {new int[]{0,1,1,1}, new int[]{0,1,1,-1},  new int[]{0,1,-1,1},  new int[]{0,1,-1,-1},
 		new int[]{0,-1,1,1},new int[] {0,-1,1,-1},new int[] {0,-1,-1,1},new int[] {0,-1,-1,-1},
 		new int[]{1,0,1,1}, new int[]{1,0,1,-1},  new int[]{1,0,-1,1},  new int[]{1,0,-1,-1},
 		new int[]{-1,0,1,1},new int[] {-1,0,1,-1},new int[] {-1,0,-1,1},new int[] {-1,0,-1,-1},
@@ -55,10 +55,10 @@ public static class FractalNoise {
 		new int[]{1,1,1,0}, new int[]{1,1,-1,0},  new int[]{1,-1,1,0},  new int[]{1,-1,-1,0},
 		new int[]{-1,1,1,0},new int[] {-1,1,-1,0},new int[] {-1,-1,1,0},new int[] {-1,-1,-1,0}};
 	
-	private static int[] p = null;
+	private int[] p = null;
 	
-	private static int[] perm_ = null;
-	private static int[] perm {
+	private int[] perm_ = null;
+	private int[] perm {
 		get {
 			if(perm_ == null)
 				SetupNoise();
@@ -68,8 +68,37 @@ public static class FractalNoise {
 			perm_ = value;
 		}
 	}
-	
-	private static void SetupNoise() {
+
+    private int[][] simplex = {
+        new int[]{0,1,2,3}, new int[]{0,1,3,2}, new int[]{0,0,0,0}, new int[]{0,2,3,1}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{1,2,3,0},
+        new int[]{0,2,1,3}, new int[]{0,0,0,0}, new int[]{0,3,1,2}, new int[]{0,3,2,1}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{1,3,2,0},
+        new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0},
+        new int[]{1,2,0,3}, new int[]{0,0,0,0}, new int[]{1,3,0,2}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{2,3,0,1}, new int[]{2,3,1,0},
+        new int[]{1,0,2,3}, new int[]{1,0,3,2}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{2,0,3,1}, new int[]{0,0,0,0}, new int[]{2,1,3,0},
+        new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0},
+        new int[]{2,0,1,3}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{3,0,1,2}, new int[]{3,0,2,1}, new int[]{0,0,0,0}, new int[]{3,1,2,0},
+        new int[]{2,1,0,3}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{3,1,0,2}, new int[]{0,0,0,0}, new int[]{3,2,0,1}, new int[]{3,2,1,0}};
+
+
+    public FractalNoise(int seed, int octaves, double amplitude, double persistance, double frequency, double lacunarity) {
+        Seed = seed;
+        Octaves = octaves;
+        Amplitude = amplitude;
+        Persistence = persistance;
+        Frequency = frequency;
+        Lacunarity = lacunarity;
+    }
+
+    public FractalNoise() {
+        Seed = 0;
+        Octaves = 1;
+        Amplitude = 1;
+        Persistence = 1;
+        Frequency = 1;
+        Lacunarity = 1;
+    }
+    
+    private void SetupNoise() {
 		p = new int[256];
 		for(int i = 0; i < 256; i++) p[i] = Mathf.FloorToInt(UnityEngine.Random.value * 256);
 		
@@ -77,28 +106,18 @@ public static class FractalNoise {
 		for(int i = 0; i < 512; i++) perm_[i] = p[i & 255];
 	}
 	
+
 	
-	private static int[][] simplex = {
-		new int[]{0,1,2,3}, new int[]{0,1,3,2}, new int[]{0,0,0,0}, new int[]{0,2,3,1}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{1,2,3,0},
-		new int[]{0,2,1,3}, new int[]{0,0,0,0}, new int[]{0,3,1,2}, new int[]{0,3,2,1}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{1,3,2,0},
-		new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0},
-		new int[]{1,2,0,3}, new int[]{0,0,0,0}, new int[]{1,3,0,2}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{2,3,0,1}, new int[]{2,3,1,0},
-		new int[]{1,0,2,3}, new int[]{1,0,3,2}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{2,0,3,1}, new int[]{0,0,0,0}, new int[]{2,1,3,0},
-		new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0},
-		new int[]{2,0,1,3}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{3,0,1,2}, new int[]{3,0,2,1}, new int[]{0,0,0,0}, new int[]{3,1,2,0},
-		new int[]{2,1,0,3}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{0,0,0,0}, new int[]{3,1,0,2}, new int[]{0,0,0,0}, new int[]{3,2,0,1}, new int[]{3,2,1,0}};
-	
-	
-	private static int fastfloor(double x) {
+	private int fastfloor(double x) {
 		return x > 0 ? (int)x : (int)x - 1;
 	}
-	private static double dot(int[] g, double x, double y) {
+	private double dot(int[] g, double x, double y) {
 		return g[0] * x + g[1] * y;
 	}
-	private static double dot(int[] g, double x, double y, double z) {
+	private double dot(int[] g, double x, double y, double z) {
 		return g[0] * x + g[1] * y + g[2] * z;
 	}
-	private static double dot(int[] g, double x, double y, double z, double w) {
+	private double dot(int[] g, double x, double y, double z, double w) {
 		return g[0] * x + g[1] * y + g[2] * z + g[3] * w;
 	}
 	
@@ -115,7 +134,7 @@ public static class FractalNoise {
 	/// <param name="y">y coordinate parameter for the noise function.</param>
 	/// <param name="z">z coordinate parameter for the noise function.</param>
 	/// <param name="w">w coordinate parameter for the noise function.</param>
-	public static double Noise(double x) {
+	public double Noise(double x) {
 		return Noise(x, 0);
 	}
 	
@@ -127,7 +146,7 @@ public static class FractalNoise {
 	/// <param name="y">y coordinate parameter for the noise function.</param>
 	/// <param name="z">z coordinate parameter for the noise function.</param>
 	/// <param name="w">w coordinate parameter for the noise function.</param>
-	public static double Noise(double x, double y) {
+	public double Noise(double x, double y) {
 		double n0, n1, n2;
 		double F2 = 0.5 * (Math.Sqrt(3.0) - 1.0);
 		double s = (x + y) * F2;
@@ -184,7 +203,7 @@ public static class FractalNoise {
 	/// <param name="y">y coordinate parameter for the noise function.</param>
 	/// <param name="z">z coordinate parameter for the noise function.</param>
 	/// <param name="w">w coordinate parameter for the noise function.</param>
-	public static double Noise(double x, double y, double z) {
+	public double Noise(double x, double y, double z) {
 		double n0, n1, n2, n3;
 		
 		double F3 = 1.0 / 3.0;
@@ -275,7 +294,7 @@ public static class FractalNoise {
 	/// <param name="y">y coordinate parameter for the noise function.</param>
 	/// <param name="z">z coordinate parameter for the noise function.</param>
 	/// <param name="w">w coordinate parameter for the noise function.</param>
-	public static double Noise(double x, double y, double z, double w) {
+	public double Noise(double x, double y, double z, double w) {
 		
 		double F4 = (Math.Sqrt(5.0) - 1.0) / 4.0;
 		double G4 = (5.0 - Math.Sqrt(5.0)) / 20.0;
@@ -387,48 +406,50 @@ public static class FractalNoise {
 	// OCTAVE METHODS DOUBLE
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private static double CombineNoise(double[] noiseValues) {
+	private double CombineNoise(double[] noiseValues) {
 		double finalNoiseValue = 0.0;
 		double totalAmplitude = 0.0;
-		
-		for(int o = 0; o < Octaves; o++) {
-			Amplitude *= Persistance;
-			totalAmplitude += Amplitude;
-			finalNoiseValue += noiseValues[o] * Amplitude;
+		double amplitude = Amplitude;
+
+        for (int o = 0; o < Octaves; o++) {
+			amplitude *= Persistence;
+			totalAmplitude += amplitude;
+			finalNoiseValue += noiseValues[o] * amplitude;
 		}
 		
 		return finalNoiseValue / totalAmplitude;
 	}
 	
-	private static double[] GetNoiseValues(double x, double y, double z, double w, int dimension) {
+	private double[] GetNoiseValues(double x, double y, double z, double w, int dimension) {
 		double[] noiseValues = new double[Octaves];
+		double frequency = Frequency;
 		
 		switch(dimension) {
 		case 1:
 			for(int o = 0; o < Octaves; o++) {
-				noiseValues[o] = Noise(x * Frequency);
-				Frequency *= 2.0;
+				noiseValues[o] = Noise(x * frequency);
+				frequency *= Lacunarity;
 			}
 			break;
 			
 		case 2:
 			for(int o = 0; o < Octaves; o++) {
-				noiseValues[o] = Noise(x * Frequency, y * Frequency);
-				Frequency *= 2.0;
+				noiseValues[o] = Noise(x * frequency, y * frequency);
+				frequency *= Lacunarity;
 			}
 			break;
 			
 		case 3:
 			for(int o = 0; o < Octaves; o++) {
-				noiseValues[o] = Noise(x * Frequency, y * Frequency, z * Frequency);
-				Frequency *= 2.0;
+				noiseValues[o] = Noise(x * frequency, y * frequency, z * frequency);
+				frequency *= Lacunarity;
 			}
 			break;
 			
 		case 4:
 			for(int o = 0; o < Octaves; o++) {
-				noiseValues[o] = Noise(x * Frequency, y * Frequency, z * Frequency, w * Frequency);
-				Frequency *= 2.0;
+				noiseValues[o] = Noise(x * frequency, y * frequency, z * frequency, w * frequency);
+				frequency *= Lacunarity;
 			}
 			break;
 		}
@@ -443,7 +464,7 @@ public static class FractalNoise {
 	/// </summary>
 	/// <returns>double</returns>
 	/// <param name="x">x coordinate parameter for the noise function.</param>
-	public static double NoiseCombinedOctaves(double x) {
+	public double NoiseCombinedOctaves(double x) {
 		double[] noiseValues = GetNoiseValues(x, 0, 0, 0, 1);
 		return CombineNoise(noiseValues);
 	}
@@ -456,7 +477,7 @@ public static class FractalNoise {
 	/// <returns>double</returns>
 	/// <param name="x">x coordinate parameter for the noise function.</param>
 	/// <param name="y">y coordinate parameter for the noise function.</param>
-	public static double NoiseCombinedOctaves(double x, double y) {
+	public double NoiseCombinedOctaves(double x, double y) {
 		double[] noiseValues = GetNoiseValues(x, y, 0, 0, 2);
 		return CombineNoise(noiseValues);
 	}
@@ -470,7 +491,7 @@ public static class FractalNoise {
 	/// <param name="x">x coordinate parameter for the noise function.</param>
 	/// <param name="y">y coordinate parameter for the noise function.</param>
 	/// <param name="z">z coordinate parameter for the noise function.</param>
-	public static double NoiseCombinedOctaves(double x, double y, double z) {
+	public double NoiseCombinedOctaves(double x, double y, double z) {
 		double[] noiseValues = GetNoiseValues(x, y, z, 0, 3);
 		return CombineNoise(noiseValues);
 	}
@@ -485,7 +506,7 @@ public static class FractalNoise {
 	/// <param name="y">y coordinate parameter for the noise function.</param>
 	/// <param name="z">z coordinate parameter for the noise function.</param>
 	/// <param name="w">w coordinate parameter for the noise function.</param>
-	public static double NoiseCombinedOctaves(double x, double y, double z, double w) {
+	public double NoiseCombinedOctaves(double x, double y, double z, double w) {
 		double[] noiseValues = GetNoiseValues(x, y, z, w, 4);
 		return CombineNoise(noiseValues);
 	}

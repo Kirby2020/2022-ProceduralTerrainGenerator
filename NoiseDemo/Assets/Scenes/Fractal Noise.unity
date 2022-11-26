@@ -448,21 +448,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 767524966}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0e8264c0a164804cb2dd670c84d8e29, type: 3}
+  m_Script: {fileID: 11500000, guid: 97a0066ac5556964b9ca9608fa211a98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   noisePreview: {fileID: 0}
   previewSize: {x: 0, y: 0}
   textureSize: {x: 0, y: 0}
-  noiseGeneratorType: 2
-  noiseGenerator:
-    id: 0
   seed: 0
-  noiseScale: 5
-  references:
-    version: 1
-    00000000:
-      type: {class: , ns: , asm: }
+  octaves: 2
+  amplitude: 1
+  frequency: 1
+  lacunarity: 1
+  persistence: 1
 --- !u!114 &767524969
 MonoBehaviour:
   m_ObjectHideFlags: 0
