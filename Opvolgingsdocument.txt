@@ -229,6 +229,7 @@ naar dat technisch logboek.>
 20-11:	Schrijven hoofdstuk 2.7 Simplex noise
 	Schrijven hoofdstuk 3	Fractal noise	
 27-11:	Afwerken  hoofdstuk 3 	Fractal noise met extra voorbeelden
+	Schrijven hoofdstuk 4	Procedurally generated terrain
 	
 
 

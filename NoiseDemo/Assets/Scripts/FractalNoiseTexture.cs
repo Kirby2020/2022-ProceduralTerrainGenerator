@@ -19,6 +19,7 @@ public class FractalNoiseTexture : MonoBehaviour {
     [SerializeField, Range(0.1f, 10), Tooltip("How much the frequency increases per octave")] private double lacunarity = 2;
     [SerializeField, Range(0.1f, 5), Tooltip("How much the amplitude increases per octave")] private double persistence = 0.5;
     [SerializeField] private bool moveTroughTime = false;
+    [SerializeField] private bool fillArea = false;
 
     
     private void Awake() {
@@ -59,6 +60,11 @@ public class FractalNoiseTexture : MonoBehaviour {
             float pixelValue = (noiseValue + 1) / 2;
             pixelValue *= amplitude;
             texture.SetPixel(x, Mathf.FloorToInt(pixelValue), Color.black);
+            if (fillArea) {
+                for (int y = 0; y < Mathf.FloorToInt(pixelValue); y++) {
+                    texture.SetPixel(x, y, Color.black);
+                }
+            }
         }
         texture.Apply();
 
