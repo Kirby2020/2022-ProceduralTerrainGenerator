@@ -451,15 +451,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97a0066ac5556964b9ca9608fa211a98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noisePreview: {fileID: 0}
-  previewSize: {x: 0, y: 0}
-  textureSize: {x: 0, y: 0}
+  noisePreview: {fileID: 767524969}
+  previewSize: {x: 800, y: 800}
+  textureSize: {x: 200, y: 200}
   seed: 0
-  octaves: 2
-  amplitude: 1
+  octaves: 3
+  amplitude: 200
   frequency: 1
-  lacunarity: 1
-  persistence: 1
+  lacunarity: 2
+  persistence: 0.5
+  moveTroughTime: 0
 --- !u!114 &767524969
 MonoBehaviour:
   m_ObjectHideFlags: 0

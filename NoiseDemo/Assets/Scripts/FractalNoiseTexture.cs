@@ -14,10 +14,11 @@ public class FractalNoiseTexture : MonoBehaviour {
     [SerializeField] private Vector2Int textureSize;
     [SerializeField, Range(0, 1000)] private int seed = 0;
     [SerializeField, Range(1, 10)] private int octaves = 2;
-    [SerializeField, Range(1, 10)] private int amplitude = 1;
-    [SerializeField, Range(1, 10)] private double frequency = 3;
-    [SerializeField, Range(0.1f, 10)] private double lacunarity = 2;
-    [SerializeField, Range(0.1f, 1)] private double persistence = 0.5;
+    [SerializeField, Range(1, 1000)] private int amplitude = 1;
+    [SerializeField, Range(0.1f, 10)] private double frequency = 3;
+    [SerializeField, Range(0.1f, 10), Tooltip("How much the frequency increases per octave")] private double lacunarity = 2;
+    [SerializeField, Range(0.1f, 5), Tooltip("How much the amplitude increases per octave")] private double persistence = 0.5;
+    [SerializeField] private bool moveTroughTime = false;
 
     
     private void Awake() {
@@ -47,18 +48,16 @@ public class FractalNoiseTexture : MonoBehaviour {
         var texture = new Texture2D(textureSize.x, textureSize.y);
         texture.filterMode = FilterMode.Point; // Removes aliasing effects!!
 
-        // for (int x = 0; x < texture.width; x++) {
-        //     for (int y = 0; y < texture.height; y++) {
-        //         float noiseValue = (float)fractalNoise.NoiseCombinedOctaves(x);
-        //         var pixel = new Color(noiseValue, noiseValue, noiseValue);
-        //         texture.SetPixel(x, y, pixel);
-        //     }
-        // }
+        for (int x = 0; x < texture.width; x++) {
+            for (int y = 0; y < texture.height; y++) {
+                texture.SetPixel(x, y, Color.white);
+            }
+        }
 
         for (int x = 0; x < texture.width; x++) {
-            float noiseValue = (float)fractalNoise.NoiseCombinedOctaves(x, Time.time * 3);
+            float noiseValue = (float)fractalNoise.NoiseCombinedOctaves(x, moveTroughTime ? Time.time * 3 : 0);
             float pixelValue = (noiseValue + 1) / 2;
-            pixelValue *= textureSize.y;
+            pixelValue *= amplitude;
             texture.SetPixel(x, Mathf.FloorToInt(pixelValue), Color.black);
         }
         texture.Apply();

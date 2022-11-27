@@ -228,7 +228,7 @@ naar dat technisch logboek.>
 19-11: 	Schrijven hoofdstuk 2.6 Perlin noise
 20-11:	Schrijven hoofdstuk 2.7 Simplex noise
 	Schrijven hoofdstuk 3	Fractal noise	
-	
+27-11:	Afwerken  hoofdstuk 3 	Fractal noise met extra voorbeelden
 	
 
 
