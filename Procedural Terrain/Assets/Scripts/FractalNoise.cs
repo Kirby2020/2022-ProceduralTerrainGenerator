@@ -33,9 +33,6 @@ public class FractalNoise : ScriptableObject {
 		}
 	}
 	
-	/// <summary> 
-	/// Value that defines how much higher octaves effect the end result in combined noise generation;
-	/// </summary>
     public double Amplitude = 1;
     public double Persistence = 0.5;
     public double Frequency = 1;
@@ -411,9 +408,9 @@ public class FractalNoise : ScriptableObject {
 		double amplitude = Amplitude;
 
         for (int o = 0; o < Octaves; o++) {
+			finalNoiseValue += noiseValues[o] * amplitude;
 			amplitude *= Persistence;
 			totalAmplitude += amplitude;
-			finalNoiseValue += noiseValues[o] * amplitude;
 		}
 		
 		return finalNoiseValue / totalAmplitude;
