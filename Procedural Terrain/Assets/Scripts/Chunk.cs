@@ -13,10 +13,15 @@ public class Chunk : ScriptableObject {
 
     public void SetPosition(int x, int z) {
         position = new Vector2Int(x, z);
+        SetName();
     }
 
     public void SetParent(Transform parent) {
         chunkContainer = parent;
+    }
+
+    private void SetName() {
+        name = $"Chunk ({position.x},\t{position.y})\t";
     }
 
     public void AddBlock(int x, int y, int z) {
@@ -45,4 +50,5 @@ public class Chunk : ScriptableObject {
             block.Value.Destroy();
         }
     }
+
 }
