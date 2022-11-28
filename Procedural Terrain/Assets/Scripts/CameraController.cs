@@ -15,7 +15,7 @@ public class CameraController : MonoBehaviour {
             transform.position += forward * cameraSpeed * Time.deltaTime;
         }
         if (Input.GetKey(KeyCode.S)) {
-            Vector3 backward = new Vector3(transform.forward.x, 0, -transform.forward.z);
+            Vector3 backward = new Vector3(-transform.forward.x, 0, -transform.forward.z);
             transform.position += backward * cameraSpeed * Time.deltaTime;
         }
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.Q)) {
@@ -35,8 +35,8 @@ public class CameraController : MonoBehaviour {
 
         // Look around with mouse holding right mouse button or arrow keys
         if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow)) {
-            float mouseX = Input.GetAxis("Mouse X");
-            float mouseY = Input.GetAxis("Mouse Y");
+            float mouseX = Input.GetAxis("Mouse X") * 3;
+            float mouseY = Input.GetAxis("Mouse Y") * 3;
 
             if (Input.GetKey(KeyCode.UpArrow)) {
                 mouseY = 1;
