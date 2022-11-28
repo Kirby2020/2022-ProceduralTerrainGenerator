@@ -1,17 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private Transform player;
+    private Queue<Vector2Int> generatedChunks = new Queue<Vector2Int>();  // Queue of chunks that have been generated
+    [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
     private FractalNoise terrainNoise;  // Main noise map for terrain height
     private const int MAX_HEIGHT = 40;  // Maximum height of terrain
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private const int CHUNK_SIZE = 16;  // Size of each chunk
     private int renderDistance = 4;     // How many chunks to render around player
     private int seaLevel = 40;          // Base terrain height
-    private Queue<Vector2Int> generatedChunks = new Queue<Vector2Int>();  // Queue of chunks that have been generated
 
     // question: is a queue lifo or fifo?
     // answer: fifo
@@ -52,6 +54,28 @@ public class TerrainGenerator : MonoBehaviour {
         }
     }
 
+        private void GenerateChunk(int chunkX, int chunkZ) {
+        Vector2Int chunkPos = new Vector2Int(chunkX, chunkZ);
+        if (generatedChunks.Contains(chunkPos)) return;
+        generatedChunks.Enqueue(chunkPos);
+        chunksInspector.Add(chunkPos);
+
+        Chunk chunk = ScriptableObject.CreateInstance<Chunk>();
+        chunk.SetPosition(chunkX, chunkZ);
+        chunk.SetParent(transform);
+        chunk.Generate(terrainNoise);
+    }
+
+    private void DestroyChunk(int chunkX, int chunkZ) {
+        int x = chunkX * CHUNK_SIZE; // Get x coordinate of chunk
+        int z = chunkZ * CHUNK_SIZE; // Get z coordinate of chunk
+        for (int i = x; i < x + CHUNK_SIZE; i++) {
+            for (int j = z; j < z + CHUNK_SIZE; j++) {
+                
+            }
+        }
+    }
+
     private void GenerateSpawnChunks() {
         int min = -renderDistance / 2;
         int max = renderDistance / 2;
@@ -83,33 +107,6 @@ public class TerrainGenerator : MonoBehaviour {
         }
     }
 
-    private void GenerateChunk(int chunkX, int chunkZ) {
-        Vector2Int chunkPos = new Vector2Int(chunkX, chunkZ);
-        if (generatedChunks.Contains(chunkPos)) return;
-        generatedChunks.Enqueue(chunkPos);
-
-        int x = chunkX * CHUNK_SIZE; // Get x coordinate of chunk
-        int z = chunkZ * CHUNK_SIZE; // Get z coordinate of chunk
-        for (int i = x; i < x + CHUNK_SIZE; i++) {
-            for (int j = z; j < z + CHUNK_SIZE; j++) {
-                int y = seaLevel + Mathf.FloorToInt((float)terrainNoise.NoiseCombinedOctaves(i,j) * (float)terrainNoise.Amplitude);
-                // if (y < MIN_HEIGHT || y > MAX_HEIGHT) break;
-                PlaceBlock(i, y, j);
-                //FillUnderground(i, y, j);
-            }
-        }
-    }
-
-    private void DestroyChunk(int chunkX, int chunkZ) {
-        int x = chunkX * CHUNK_SIZE; // Get x coordinate of chunk
-        int z = chunkZ * CHUNK_SIZE; // Get z coordinate of chunk
-        for (int i = x; i < x + CHUNK_SIZE; i++) {
-            for (int j = z; j < z + CHUNK_SIZE; j++) {
-                
-            }
-        }
-    }
-
     private void PlaceBlock(int x, int y, int z) {
         Block block = ScriptableObject.CreateInstance<Block>();
         block.SetPosition(x, y, z);
@@ -119,12 +116,7 @@ public class TerrainGenerator : MonoBehaviour {
 
     private void FillUnderground(int x, int y, int z) {
         for (int i = MIN_HEIGHT; i < y; i++) {
-            GameObject block;
-            block = Resources.Load("Blocks/StoneBlock") as GameObject;
-
-            var placedBlock = Instantiate(block, new Vector3(x, i, z), Quaternion.identity);
-            placedBlock.name = $"Block ({x},\t{i},\t{z})\t";
-            placedBlock.transform.parent = transform;
+            PlaceBlock(x, i, z);
         }
     }
 
