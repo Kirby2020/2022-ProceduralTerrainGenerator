@@ -3,7 +3,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour {
     private const float CAMERA_SPEED = 10f;
     private const float CAMERA_SPRINT_SPEED = 30f;
-    private const float CAMERA_ROTATION_SPEED = 50f;
+    private const float CAMERA_ROTATION_SPEED = 80f;
 
     // Update is called once per frame
     void Update() {
@@ -54,7 +54,7 @@ public class CameraController : MonoBehaviour {
             mouseX *= CAMERA_ROTATION_SPEED * Time.deltaTime;
             mouseY *= CAMERA_ROTATION_SPEED * Time.deltaTime;
 
-            Vector3 verticalRotation = new Vector3(transform.up.x, 0, transform.up.z);
+            Vector3 verticalRotation = Vector3.up;
             Vector3 horizontalRotation = new Vector3(transform.right.x, 0, transform.right.z);
 
             transform.rotation = Quaternion.AngleAxis(mouseX, verticalRotation) * transform.rotation;
