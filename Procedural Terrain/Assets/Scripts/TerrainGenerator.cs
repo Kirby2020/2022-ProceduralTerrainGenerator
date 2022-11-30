@@ -1,8 +1,10 @@
 using System;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private Transform player;
@@ -13,7 +15,7 @@ public class TerrainGenerator : MonoBehaviour {
     private const int MAX_HEIGHT = 40;  // Maximum height of terrain
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private int renderDistance = 2;     // How many chunks to render around player
+    private int renderDistance = 8;     // How many chunks to render around player
     private int seaLevel = 40;          // Base terrain height
 
     private void Awake() {
@@ -23,11 +25,14 @@ public class TerrainGenerator : MonoBehaviour {
         GenerateSpawnChunks();   // Generates spawn chunks
     }
 
-    private void Update() {
+    private async void Update() {
         // Generate extra chunks as player moves
-        //GeneratePlayerChunks();
+        // create a background task
+        await Task.Run(() => {
+            GeneratePlayerChunks();
+        });
         // Remove chunks that are too far away
-        //UnloadChunks();
+        // UnloadChunks();
     }
 
     private void SetTerrainNoise() {
@@ -46,21 +51,22 @@ public class TerrainGenerator : MonoBehaviour {
 
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
-                FillChunk(chunkX, chunkZ);
+                GenerateChunk(chunkX, chunkZ);
             }
         }
-        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
     }
 
     private void GeneratePlayerChunks() {
-        int minX = GetPlayerPosition().x - (renderDistance / 2);
-        int maxX = minX + renderDistance;
-        int minZ = GetPlayerPosition().z - (renderDistance / 2);
-        int maxZ = minZ + renderDistance;
+        // Get chunk coordinates of player
+        Vector2Int playerChunk = GetChunkPosition(player.position);
 
-        for (int x = minX; x < maxX; x++) {
-            for (int z = minZ; z < maxZ; z++) {
-                GenerateChunk(x, z);
+        int min = -renderDistance / 2;  
+        int max = renderDistance / 2;
+
+        // Generate chunks around player with radius min to max ( = renderDistance )
+        for (int chunkX = min; chunkX <= max; chunkX++) {
+            for (int chunkZ = min; chunkZ <= max; chunkZ++) {
+                GenerateChunk(playerChunk.x + chunkX, playerChunk.y + chunkZ);
             }
         }
     }
@@ -86,6 +92,7 @@ public class TerrainGenerator : MonoBehaviour {
         // Add chunk to queue of generated chunks
         generatedChunks.Enqueue(chunk);
         chunksInspector.Add(chunk.GetPosition());  // For inspector only
+        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
     }
 
     /// <summary>
@@ -121,6 +128,10 @@ public class TerrainGenerator : MonoBehaviour {
     
     private Vector3Int GetPlayerPosition() {
         return new Vector3Int(Mathf.FloorToInt(player.position.x), Mathf.FloorToInt(player.position.y), Mathf.FloorToInt(player.position.z));
+    }
+
+    private Vector2Int GetChunkPosition(Vector3 position) {
+        return new Vector2Int(Mathf.FloorToInt(position.x / CHUNK_SIZE), Mathf.FloorToInt(position.z / CHUNK_SIZE));
     }
 
     #region old
