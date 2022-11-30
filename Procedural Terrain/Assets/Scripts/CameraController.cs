@@ -3,7 +3,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour {
     private const float CAMERA_SPEED = 10f;
     private const float CAMERA_SPRINT_SPEED = 30f;
-    private const float CAMERA_ROTATION_SPEED = 80f;
+    private const float CAMERA_ROTATION_SPEED = 150f;
 
     // Update is called once per frame
     void Update() {
@@ -35,20 +35,20 @@ public class CameraController : MonoBehaviour {
 
         // Look around with mouse holding right mouse button or arrow keys
         if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow)) {
-            float mouseX = Input.GetAxis("Mouse X") * 3;
-            float mouseY = Input.GetAxis("Mouse Y") * 3;
+            float mouseX = Input.GetMouseButton(1) ? Input.GetAxis("Mouse X") * 3 : 0;
+            float mouseY = Input.GetMouseButton(1) ? Input.GetAxis("Mouse Y") * 3 : 0;
 
             if (Input.GetKey(KeyCode.UpArrow)) {
-                mouseY = 1;
+                mouseY = 0.5f;
             }
             if (Input.GetKey(KeyCode.DownArrow)) {
-                mouseY = -1;
+                mouseY = -0.5f;
             }
             if (Input.GetKey(KeyCode.LeftArrow)) {
-                mouseX = -1;
+                mouseX = -0.5f;
             }
             if (Input.GetKey(KeyCode.RightArrow)) {
-                mouseX = 1;
+                mouseX = 0.5f;
             }
 
             mouseX *= CAMERA_ROTATION_SPEED * Time.deltaTime;
@@ -56,6 +56,11 @@ public class CameraController : MonoBehaviour {
 
             Vector3 verticalRotation = Vector3.up;
             Vector3 horizontalRotation = new Vector3(transform.right.x, 0, transform.right.z);
+
+            // Limit rotation 
+            if (transform.rotation.eulerAngles.x - mouseY > 80 && transform.rotation.eulerAngles.x - mouseY < 280) {
+                mouseY = 0;
+            } 
 
             transform.rotation = Quaternion.AngleAxis(mouseX, verticalRotation) * transform.rotation;
             transform.rotation = Quaternion.AngleAxis(-mouseY, horizontalRotation) * transform.rotation;
