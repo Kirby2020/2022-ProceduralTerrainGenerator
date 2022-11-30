@@ -6,27 +6,28 @@ using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private Transform player;
-    private Queue<Vector2Int> generatedChunks = new Queue<Vector2Int>();  // Queue of chunks that have been generated
+    private Queue<Chunk> generatedChunks = new Queue<Chunk>();  // Queue of chunks that have been generated
     [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
+    [SerializeField] private int blockCount = 0;
     private FractalNoise terrainNoise;  // Main noise map for terrain height
     private const int MAX_HEIGHT = 40;  // Maximum height of terrain
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private int renderDistance = 8;     // How many chunks to render around player
+    private int renderDistance = 2;     // How many chunks to render around player
     private int seaLevel = 40;          // Base terrain height
 
     private void Awake() {
         SetTerrainNoise();
-        generatedChunks = new Queue<Vector2Int>();
+        generatedChunks = new Queue<Chunk>();
         // GenerateTerrain();
         GenerateSpawnChunks();   // Generates spawn chunks
     }
 
     private void Update() {
         // Generate extra chunks as player moves
-        GeneratePlayerChunks();
+        //GeneratePlayerChunks();
         // Remove chunks that are too far away
-        UnloadChunks();
+        //UnloadChunks();
     }
 
     private void SetTerrainNoise() {
@@ -45,9 +46,10 @@ public class TerrainGenerator : MonoBehaviour {
 
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
-                GenerateChunk(chunkX, chunkZ);
+                FillChunk(chunkX, chunkZ);
             }
         }
+        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
     }
 
     private void GeneratePlayerChunks() {
@@ -70,38 +72,50 @@ public class TerrainGenerator : MonoBehaviour {
     /// <param name="chunkZ">Z position of the chunk</param>
     private void GenerateChunk(int chunkX, int chunkZ) {
         // Check if chunk has already been generated
-        Vector2Int chunkPos = new Vector2Int(chunkX, chunkZ);
-        if (generatedChunks.Contains(chunkPos)) return;
+        if (generatedChunks.Any(chunk => chunk.GetPosition().x == chunkX && chunk.GetPosition().y == chunkZ)) {
+            return;
+        }
 
-        // Add chunk to queue of generated chunks
-        generatedChunks.Enqueue(chunkPos);
-        chunksInspector.Add(chunkPos);  // For inspector only
-
-        // Create parent object for chunk
-        GameObject chunkContainer = new GameObject($"Chunk ({chunkX},{chunkZ})");
-        chunkContainer.transform.parent = transform;
+        // Create chunk game object and attach Chunk script
+        Chunk chunk = new GameObject("Chunk " + chunkX + ", " + chunkZ).AddComponent<Chunk>();
 
         // Generate chunk
-        Chunk chunk = ScriptableObject.CreateInstance<Chunk>();
         chunk.SetPosition(chunkX, chunkZ);
-        chunk.SetParent(chunkContainer.transform);
         chunk.Generate(terrainNoise);
+
+        // Add chunk to queue of generated chunks
+        generatedChunks.Enqueue(chunk);
+        chunksInspector.Add(chunk.GetPosition());  // For inspector only
+    }
+
+    /// <summary>
+    /// Fills a chunk with blocks
+    /// Only used for demonstration purposes
+    /// </summary>
+    /// <param name="chunkX">X position of the chunk</param>
+    /// <param name="chunkZ">Z position of the chunk</param>
+    private void FillChunk(int chunkX, int chunkZ) {
+        // Check if chunk has already been generated
+        if (generatedChunks.Any(chunk => chunk.GetPosition().x == chunkX && chunk.GetPosition().y == chunkZ)) {
+            return;
+        }
+
+        // Create chunk game object and attach Chunk script
+        Chunk chunk = new GameObject("Chunk " + chunkX + ", " + chunkZ).AddComponent<Chunk>();
+
+        // Fill chunk
+        chunk.SetPosition(chunkX, chunkZ);
+        chunk.Fill(20);
+
+        // Add chunk to queue of generated chunks
+        generatedChunks.Enqueue(chunk);
+        chunksInspector.Add(chunk.GetPosition());  // For inspector only
     }
 
     private void UnloadChunks() {
         while (generatedChunks.Count > renderDistance * renderDistance) {
-            Vector2Int chunk = generatedChunks.Dequeue();
-            DestroyChunk(chunk.x, chunk.y);
-        }
-    }
-
-    private void DestroyChunk(int chunkX, int chunkZ) {
-        int x = chunkX * CHUNK_SIZE; // Get x coordinate of chunk
-        int z = chunkZ * CHUNK_SIZE; // Get z coordinate of chunk
-        for (int i = x; i < x + CHUNK_SIZE; i++) {
-            for (int j = z; j < z + CHUNK_SIZE; j++) {
-                GameObject.Find("Chunk (" + chunkX + "," + chunkZ + ")").GetComponent<Chunk>().ClearChunk();
-            }
+            Chunk chunk = generatedChunks.Dequeue();
+            chunk.Clear();
         }
     }
     
