@@ -230,7 +230,9 @@ naar dat technisch logboek.>
 	Schrijven hoofdstuk 3	Fractal noise	
 27-11:	Afwerken  hoofdstuk 3 	Fractal noise met extra voorbeelden
 	Schrijven hoofdstuk 4	Procedurally generated terrain
-	
+30-11:	Schrijven hoofdstuk 4.1 Introductie
+	Schrijven hoofdstuk 4.2 3D rendering
+	Schrijven hoofdstuk 4.3 De kubus
 
 
 
