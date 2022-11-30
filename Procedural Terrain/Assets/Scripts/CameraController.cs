@@ -6,7 +6,7 @@ public class CameraController : MonoBehaviour {
     private const float CAMERA_ROTATION_SPEED = 150f;
 
     // Update is called once per frame
-    void Update() {
+    void FixedUpdate() {
         var cameraSpeed = Input.GetKey(KeyCode.LeftShift) ? CAMERA_SPRINT_SPEED : CAMERA_SPEED;
         
         // Move camera
