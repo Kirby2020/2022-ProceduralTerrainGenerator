@@ -19,11 +19,15 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         return position;
     }
 
+    public void SetParent(Transform parent) {
+        transform.parent = parent;
+    }
+
     public void AddBlock(int x, int y, int z) {
-        Block block = ScriptableObject.CreateInstance<Block>();
+        Block block = new GameObject($"Block ({x},\t{y},\t{z})\t").AddComponent<Block>();
         block.SetPosition(x, y, z);
         block.SetParent(transform);
-        block.Place();
+        block.Render();
 
         blocks.Add(block.position, block);
     }
@@ -55,6 +59,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         foreach (KeyValuePair<Vector3Int, Block> block in blocks) {
             block.Value.Destroy();
         }
+        blocks.Clear();     
+        Destroy(gameObject);    // Remove chunk game object from scene
     }
 
     public int GetBlockCount() {
