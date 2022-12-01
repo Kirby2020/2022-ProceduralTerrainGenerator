@@ -32,7 +32,10 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         blocks.Add(block.position, block);
     }
 
-    public void Generate(FractalNoise terrainNoise) {
+    // TODO: generate chunk in background thread
+    // first, calculate the height of each block in separate thread
+    // then, generate the chunk in the main thread
+    public Task Generate(FractalNoise terrainNoise) {
         int x = position.x * CHUNK_SIZE; // Get x coordinate of chunk
         int z = position.y * CHUNK_SIZE; // Get z coordinate of chunk
         for (int i = x; i < x + CHUNK_SIZE; i++) {
@@ -41,6 +44,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                 AddBlock(i, y, j);
             }
         }
+        return Task.CompletedTask;
     }
 
     public void Fill(int maxHeight = 20) {

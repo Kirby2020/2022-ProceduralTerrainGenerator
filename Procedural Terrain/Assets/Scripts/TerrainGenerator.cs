@@ -54,6 +54,7 @@ public class TerrainGenerator : MonoBehaviour {
         }
     }
 
+    // TODO: generate chunks in parallel
     private void GeneratePlayerChunks() {
         // Get chunk coordinates of player
         Vector2Int playerChunk = GetChunkPosition(player.position);
@@ -145,6 +146,16 @@ public class TerrainGenerator : MonoBehaviour {
                 // if (y < MIN_HEIGHT || y > MAX_HEIGHT) break;
                 PlaceBlock(x, y, z);
                 //FillUnderground(x, y, z);
+            }
+        }
+    }
+
+    private void GenerateFlatTerrain() {
+        for (int x = 0; x < CHUNK_SIZE; x++) {
+            for (int z = 0; z < CHUNK_SIZE; z++) {
+                for (int y = 0; y < SEA_LEVEL; y++) {
+                    PlaceBlock(x, y, z);
+                }
             }
         }
     }
