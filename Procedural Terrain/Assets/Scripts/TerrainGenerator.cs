@@ -63,11 +63,17 @@ public class TerrainGenerator : MonoBehaviour {
         int max = RENDER_DISTANCE / 2;
 
         // Generate chunks around player with radius min to max ( = renderDistance )
-        for (int chunkX = min; chunkX <= max; chunkX++) {
-            for (int chunkZ = min; chunkZ <= max; chunkZ++) {
+        Parallel.For(min, max, chunkX => {
+            Parallel.For(min, max, chunkZ => {
                 GenerateChunk(playerChunk.x + chunkX, playerChunk.y + chunkZ);
-            }
-        }
+            });
+        });
+
+        // for (int chunkX = min; chunkX <= max; chunkX++) {
+        //     for (int chunkZ = min; chunkZ <= max; chunkZ++) {
+        //         GenerateChunk(playerChunk.x + chunkX, playerChunk.y + chunkZ);
+        //     }
+        // }
     }
 
     /// <summary>

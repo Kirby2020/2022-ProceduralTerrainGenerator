@@ -38,6 +38,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     public Task Generate(FractalNoise terrainNoise) {
         int x = position.x * CHUNK_SIZE; // Get x coordinate of chunk
         int z = position.y * CHUNK_SIZE; // Get z coordinate of chunk
+        
         for (int i = x; i < x + CHUNK_SIZE; i++) {
             for (int j = z; j < z + CHUNK_SIZE; j++) {
                 int y = SEA_LEVEL + Mathf.FloorToInt((float)terrainNoise.NoiseCombinedOctaves(i,j) * (float)terrainNoise.Amplitude);                
