@@ -3,7 +3,7 @@ using UnityEngine;
 public class CameraController : MonoBehaviour {
     private const float CAMERA_SPEED = 10f;
     private const float CAMERA_SPRINT_SPEED = 30f;
-    private const float CAMERA_ROTATION_SPEED = 150f;
+    private const float CAMERA_ROTATION_SPEED = 120f;
 
     // Update is called once per frame
     void FixedUpdate() {
