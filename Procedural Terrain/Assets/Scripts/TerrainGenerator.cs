@@ -15,8 +15,8 @@ public class TerrainGenerator : MonoBehaviour {
     private const int MAX_HEIGHT = 40;  // Maximum height of terrain
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private int renderDistance = 8;     // How many chunks to render around player
-    private int seaLevel = 40;          // Base terrain height
+    private const int RENDER_DISTANCE = 8;     // How many chunks to render around player
+    private const int SEA_LEVEL = 40;          // Base terrain height
 
     private void Awake() {
         SetTerrainNoise();
@@ -25,14 +25,12 @@ public class TerrainGenerator : MonoBehaviour {
         GenerateSpawnChunks();   // Generates spawn chunks
     }
 
-    private async void Update() {
+    private void Update() {
         // Generate extra chunks as player moves
-        // create a background task
-        await Task.Run(() => {
-            GeneratePlayerChunks();
-        });
+        GeneratePlayerChunks();
+
         // Remove chunks that are too far away
-        // UnloadChunks();
+        UnloadChunks();
     }
 
     private void SetTerrainNoise() {
@@ -46,8 +44,8 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void GenerateSpawnChunks() {
-        int min = -renderDistance / 2;
-        int max = renderDistance / 2;
+        int min = -RENDER_DISTANCE / 2;
+        int max = RENDER_DISTANCE / 2;
 
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
@@ -60,8 +58,8 @@ public class TerrainGenerator : MonoBehaviour {
         // Get chunk coordinates of player
         Vector2Int playerChunk = GetChunkPosition(player.position);
 
-        int min = -renderDistance / 2;  
-        int max = renderDistance / 2;
+        int min = -RENDER_DISTANCE / 2;  
+        int max = RENDER_DISTANCE / 2;
 
         // Generate chunks around player with radius min to max ( = renderDistance )
         for (int chunkX = min; chunkX <= max; chunkX++) {
@@ -87,6 +85,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Generate chunk
         chunk.SetPosition(chunkX, chunkZ);
+        chunk.SetParent(transform);
         chunk.Generate(terrainNoise);
 
         // Add chunk to queue of generated chunks
@@ -112,6 +111,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Fill chunk
         chunk.SetPosition(chunkX, chunkZ);
+        chunk.SetParent(transform);
         chunk.Fill(20);
 
         // Add chunk to queue of generated chunks
@@ -120,8 +120,9 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void UnloadChunks() {
-        while (generatedChunks.Count > renderDistance * renderDistance) {
+        while (generatedChunks.Count > 20 * RENDER_DISTANCE * RENDER_DISTANCE) {
             Chunk chunk = generatedChunks.Dequeue();
+            chunksInspector.Remove(chunk.GetPosition());  // For inspector only
             chunk.Clear();
         }
     }
@@ -140,7 +141,7 @@ public class TerrainGenerator : MonoBehaviour {
         int minZ = (int)player.position.z;
         for (int x = minX; x < (int)player.position.x + CHUNK_SIZE + (int)player.position.x; x++) {
             for (int z = minZ; z < (int)player.position.z + CHUNK_SIZE + (int)player.position.z; z++) {
-                int y = seaLevel + Mathf.FloorToInt((float)terrainNoise.NoiseCombinedOctaves(x,z) * (float)terrainNoise.Amplitude);
+                int y = SEA_LEVEL + Mathf.FloorToInt((float)terrainNoise.NoiseCombinedOctaves(x,z) * (float)terrainNoise.Amplitude);
                 // if (y < MIN_HEIGHT || y > MAX_HEIGHT) break;
                 PlaceBlock(x, y, z);
                 //FillUnderground(x, y, z);
@@ -149,10 +150,10 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void PlaceBlock(int x, int y, int z) {
-        Block block = ScriptableObject.CreateInstance<Block>();
+        Block block = new GameObject("Block " + x + ", " + y + ", " + z).AddComponent<Block>();
         block.SetPosition(x, y, z);
         block.SetParent(transform);
-        block.Place();
+        block.Render();
     }
 
     private void FillUnderground(int x, int y, int z) {
