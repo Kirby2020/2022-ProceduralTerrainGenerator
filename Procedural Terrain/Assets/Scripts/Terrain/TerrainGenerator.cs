@@ -12,6 +12,7 @@ public class TerrainGenerator : MonoBehaviour {
     private Queue<Chunk> generatedChunks = new Queue<Chunk>();  // Queue of chunks that have been generated
     [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
     [SerializeField] private int blockCount = 0;
+    [SerializeField] private int TotalVertices = 0;
     private FractalNoise terrainNoise;  // Main noise map for terrain height
     private const int MAX_HEIGHT = 40;  // Maximum height of terrain
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
@@ -54,6 +55,7 @@ public class TerrainGenerator : MonoBehaviour {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
                 Chunk chunk = CreateChunk(chunkX, chunkZ);
                 chunk.GenerateHeightMap(terrainNoise);
+                chunk.Generate();
                 RenderChunk(chunk);
             }
         }
@@ -85,6 +87,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Render chunks
         foreach (Chunk chunk in chunksToGenerate) {
+            chunk.Generate();
             RenderChunk(chunk);
         }
     }
@@ -115,6 +118,8 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Render chunk
         chunk.Render();
+
+        TotalVertices += chunk.GetVertexCount();
     }
 
     private void UnloadChunks() {
@@ -189,7 +194,7 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void PlaceBlock(int x, int y, int z) {
-        Block block = new GameObject("Block " + x + ", " + y + ", " + z).AddComponent<Block>();
+        Block block = ScriptableObject.CreateInstance<Block>();
         block.SetPosition(x, y, z);
         block.SetParent(transform);
         block.Render();
