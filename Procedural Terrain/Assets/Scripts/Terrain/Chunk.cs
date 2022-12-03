@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-
 public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private const int CHUNK_SIZE = 16;  // Size of each chunk
     private const int SEA_LEVEL = 40;   // Base terrain height
 
-    public Dictionary<Vector3Int, Block> blocks { get; private set; } = new Dictionary<Vector3Int, Block>(); // Dictionary of blocks in chunk
+    private Dictionary<Vector3Int, Block> blocks { get; set; } = new Dictionary<Vector3Int, Block>(); // Dictionary of blocks in chunk
+    private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
 
     public void SetPosition(int x, int z) {
@@ -23,7 +23,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         transform.parent = parent;
     }
 
-    public void AddBlock(int x, int y, int z) {
+    private void GenerateBlock(int x, int y, int z) {
         Block block = new GameObject($"Block ({x},\t{y},\t{z})\t").AddComponent<Block>();
         block.SetPosition(x, y, z);
         block.SetParent(transform);
@@ -32,21 +32,45 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         blocks.Add(block.position, block);
     }
 
-    // TODO: generate chunk in background thread
-    // first, calculate the height of each block in separate thread
-    // then, generate the chunk in the main thread
-    public Task Generate(FractalNoise terrainNoise) {
-        int x = position.x * CHUNK_SIZE; // Get x coordinate of chunk
-        int z = position.y * CHUNK_SIZE; // Get z coordinate of chunk
-        
-        for (int i = x; i < x + CHUNK_SIZE; i++) {
-            for (int j = z; j < z + CHUNK_SIZE; j++) {
-                int y = SEA_LEVEL + Mathf.FloorToInt((float)terrainNoise.NoiseCombinedOctaves(i,j) * (float)terrainNoise.Amplitude);                
-                AddBlock(i, y, j);
+    private void CreateBlock(int x, int y, int z) {
+        Block block = new GameObject($"Block ({x},\t{y},\t{z})\t").AddComponent<Block>();
+        block.SetPosition(x, y, z);
+        block.SetParent(transform);
+
+        blocks.Add(block.position, block);
+    }
+
+    public void GenerateHeightMap(FractalNoise terrainNoise) {
+        heightMap = new int[CHUNK_SIZE, CHUNK_SIZE];
+
+        int x = position.x * CHUNK_SIZE;
+        int z = position.y * CHUNK_SIZE;
+
+        Parallel.For(x, x + CHUNK_SIZE, i => {
+            Parallel.For(z, z + CHUNK_SIZE, j => {
+                heightMap[i - x, j - z] = 
+                    SEA_LEVEL + Mathf.FloorToInt((float)terrainNoise.NoiseCombinedOctaves(i,j) *
+                    (float)terrainNoise.Amplitude);
+            });
+        });       
+    }
+
+    public void Render() {
+        int x = position.x * CHUNK_SIZE;
+        int z = position.y * CHUNK_SIZE;
+
+        for (int i = 0; i < CHUNK_SIZE; i++) {
+            for (int j = 0; j < CHUNK_SIZE; j++) {
+                int height = heightMap[i, j];
+                CreateBlock(x + i, height, z + j);
             }
         }
-        return Task.CompletedTask;
+
+        foreach (KeyValuePair<Vector3Int, Block> block in blocks) {
+            block.Value.Render();
+        }
     }
+
 
     public void Fill(int maxHeight = 20) {
         int x = position.x * CHUNK_SIZE; // Get x coordinate of chunk
@@ -54,7 +78,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         for (int i = x; i < x + CHUNK_SIZE; i++) {
             for (int j = z; j < z + CHUNK_SIZE; j++) {
                 for (int k = 0; k < maxHeight; k++) {
-                    AddBlock(i, k, j);
+                    GenerateBlock(i, k, j);
                 }                           
             }
         }

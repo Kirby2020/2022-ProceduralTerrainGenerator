@@ -16,7 +16,7 @@ public class TerrainGenerator : MonoBehaviour {
     private const int MAX_HEIGHT = 40;  // Maximum height of terrain
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int RENDER_DISTANCE = 8;     // How many chunks to render around player
+    private const int RENDER_DISTANCE = 16;     // How many chunks to render around player
     private const int SEA_LEVEL = 40;          // Base terrain height
 
 
@@ -53,8 +53,8 @@ public class TerrainGenerator : MonoBehaviour {
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
                 Chunk chunk = CreateChunk(chunkX, chunkZ);
-                GenerateChunk(chunk);
-                //RenderChunk(chunk);
+                chunk.GenerateHeightMap(terrainNoise);
+                RenderChunk(chunk);
             }
         }
     }
@@ -80,8 +80,13 @@ public class TerrainGenerator : MonoBehaviour {
 
         // Generate chunks in parallel
         Parallel.ForEach(chunksToGenerate, chunk => {
-            GenerateChunk(chunk);
+            chunk.GenerateHeightMap(terrainNoise);
         });
+
+        // Render chunks
+        foreach (Chunk chunk in chunksToGenerate) {
+            RenderChunk(chunk);
+        }
     }
 
     /// <summary>
@@ -91,7 +96,7 @@ public class TerrainGenerator : MonoBehaviour {
     /// <param name="chunkX">X position of the chunk</param>
     /// <param name="chunkZ">Z position of the chunk</param>
     private Chunk CreateChunk(int chunkX, int chunkZ) {
-        // If a chunk already exists at this position, return it
+        // If a chunk already exists at this position, return null
         if (generatedChunks.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return null;
 
         // Else: create a new chunk
@@ -102,29 +107,14 @@ public class TerrainGenerator : MonoBehaviour {
         return chunk;
     }
 
-    /// <summary>
-    /// Generates a chunk
-    /// </summary>
-    /// <param name="chunk">Chunk to generate</param>
-    private void GenerateChunk(Chunk chunk) {
-        // Generate chunk
-        chunk.Generate(terrainNoise);
-
+    private void RenderChunk(Chunk chunk) {
         // Add chunk to queue of generated chunks
         generatedChunks.Enqueue(chunk);
-        chunksInspector.Add(chunk.GetPosition());  // For inspector only
-        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
-    }
-
-    private void RenderChunk(Chunk chunk) {
-        // Add chunk to list of generated chunks
-        generatedChunks.Enqueue(chunk);
-
-        // Add chunk to inspector list
         chunksInspector.Add(chunk.GetPosition());
+        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
 
         // Render chunk
-        // chunk.Render();
+        chunk.Render();
     }
 
     private void UnloadChunks() {
@@ -134,6 +124,7 @@ public class TerrainGenerator : MonoBehaviour {
             chunk.Clear();
         }
     }
+
     #endregion
     
     private Vector3Int GetPlayerPosition() {
