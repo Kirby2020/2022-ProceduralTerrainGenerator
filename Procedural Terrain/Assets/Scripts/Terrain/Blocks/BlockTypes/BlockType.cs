@@ -6,4 +6,5 @@ public enum BlockType {
     Sand,
     Snow,
     Water,
+    Bedrock,
 }

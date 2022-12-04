@@ -20,6 +20,8 @@ public class TerrainGenerator : MonoBehaviour {
     private const int RENDER_DISTANCE = 16;     // How many chunks to render around player
     private const int SEA_LEVEL = 40;          // Base terrain height
 
+    private Thread chunkGeneratorThread;  // Thread for generating chunks
+
 
     private void Awake() {
         SetTerrainNoise();
@@ -106,6 +108,7 @@ public class TerrainGenerator : MonoBehaviour {
         Chunk chunk = new GameObject($"Chunk {chunkX}, {chunkZ}").AddComponent<Chunk>();
         chunk.SetPosition(chunkX, chunkZ);
         chunk.SetParent(transform);
+        chunk.Initialize();
 
         return chunk;
     }

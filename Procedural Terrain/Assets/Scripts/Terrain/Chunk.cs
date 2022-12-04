@@ -13,6 +13,9 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private const int SEA_LEVEL = 30;   // Base terrain height
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private MeshData meshData = new MeshData(); // Mesh data for chunk
+    private MeshRenderer meshRenderer;  
+    private MeshCollider meshCollider;
+    private MeshFilter meshFilter;
     private ConcurrentDictionary<Vector3Int, Block> blocks { get; set; } = new ConcurrentDictionary<Vector3Int, Block>(); // Dictionary of blocks in chunk
     private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
@@ -39,6 +42,12 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
     #endregion
 
+    public void Initialize() {
+        meshRenderer = GetComponent<MeshRenderer>();
+        meshFilter = GetComponent<MeshFilter>();
+        meshCollider = GetComponent<MeshCollider>();
+    }
+
     public void GenerateHeightMap(FractalNoise terrainNoise) {
         heightMap = new int[CHUNK_SIZE, CHUNK_SIZE];
         var chunkCoordinates = GetChunkCoordinates();
@@ -59,7 +68,21 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
             Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
                 int height = heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z];
-                Block block = CreateBlock(i, height, j);
+                for (int k = height; k <= height; k++) {
+                    // Top block
+                    if (k == height) {
+                        CreateBlock(i, k, j, BlockType.Grass);
+                    }
+                    else if (k > height - 3) {
+                        CreateBlock(i, k, j, BlockType.Dirt);
+                    }
+                    else if (k == MIN_HEIGHT) {
+                        CreateBlock(i, k, j, BlockType.Bedrock);
+                    }
+                    else {
+                        CreateBlock(i, k, j, BlockType.Stone);
+                    }
+                }
             });
         });
     }
@@ -82,7 +105,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
     
     public void Render() {
-        GetComponent<MeshRenderer>().sharedMaterial = new Material(Shader.Find("Standard"));
+        meshRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
         GenerateMesh();
         UploadMesh();
     }
@@ -126,9 +149,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private void UploadMesh() {
         meshData.UploadMesh();
 
-        var meshFilter = GetComponent<MeshFilter>();
-        var meshCollider = GetComponent<MeshCollider>();
-
         meshFilter.mesh = meshData.mesh;
 
         if (meshData.vertices.Count > 3)
@@ -139,13 +159,22 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         return new Vector3Int(position.x * CHUNK_SIZE, 0, position.y * CHUNK_SIZE);
     }
 
-    private Block CreateBlock(int x, int y, int z) {
-        Block block = new StoneBlock();
+    private Block CreateBlock(int x, int y, int z, BlockType type = BlockType.Stone) {
+        Block block = CreateBlockFromType(type);
         block.SetPosition(x, y, z);
 
         blocks.TryAdd(block.Position, block);
 
         return block;
+    }
+
+    private Block CreateBlockFromType(BlockType type) {
+        return new StoneBlock();
+        // switch (type) {
+        //     case BlockType.Stone:
+        //         return new StoneBlock();
+        //     default: return new StoneBlock();
+        // }
     }
 
     int IComparer<Chunk>.Compare(Chunk x, Chunk y){
