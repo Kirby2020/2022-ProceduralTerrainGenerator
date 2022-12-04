@@ -6,10 +6,12 @@ using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
 using UnityEngine.Events;
+using UnityEngine.Profiling;
+using System.Collections.Concurrent;
 
 public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private Transform player;
-    private Queue<Chunk> generatedChunks = new Queue<Chunk>();  // Queue of chunks that have been generated
+    private ConcurrentQueue<Chunk> generatedChunks = new ConcurrentQueue<Chunk>();  // Queue of chunks that have been generated
     [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
     [SerializeField] private int blockCount = 0;
     [SerializeField] private int TotalVertices = 0;
@@ -26,6 +28,8 @@ public class TerrainGenerator : MonoBehaviour {
     private void Awake() {
         SetTerrainNoise();
         GenerateSpawnChunks();   // Generates spawn chunks
+
+        InvokeRepeating("UpdateInspector", 0, 5);  // Updates inspector every second
     }
 
     private void Update() {
@@ -70,6 +74,7 @@ public class TerrainGenerator : MonoBehaviour {
         int min = -RENDER_DISTANCE / 2;  
         int max = RENDER_DISTANCE / 2;
 
+        Profiler.BeginSample("Creating Chunks");
         // Load all chunks around player with radius min to max ( = renderDistance )
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
@@ -79,17 +84,22 @@ public class TerrainGenerator : MonoBehaviour {
                 chunksToGenerate.Enqueue(chunk);
             }
         }
+        Profiler.EndSample();
 
+        Profiler.BeginSample("Generating Chunks");
         // Generate chunks in parallel
         Parallel.ForEach(chunksToGenerate, chunk => {
             chunk.GenerateHeightMap(terrainNoise);
             chunk.Generate();
         });
+        Profiler.EndSample();
 
+        Profiler.BeginSample("Rendering Chunks");
         // Render chunks
         foreach (Chunk chunk in chunksToGenerate) {
             RenderChunk(chunk);
         }
+        Profiler.EndSample();
     }
 
     /// <summary>
@@ -118,14 +128,9 @@ public class TerrainGenerator : MonoBehaviour {
     private void RenderChunk(Chunk chunk) {
         // Add chunk to queue of generated chunks
         generatedChunks.Enqueue(chunk);
-
+    
         // Render chunk
         chunk.Render();
-
-        // Update inspector
-        chunksInspector.Add(chunk.GetPosition());
-        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
-        TotalVertices += chunk.GetVertexCount();
     }
 
     /// <summary>
@@ -133,8 +138,7 @@ public class TerrainGenerator : MonoBehaviour {
     /// </summary>
     private void UnloadChunks() {
         while (generatedChunks.Count > 20 * RENDER_DISTANCE * RENDER_DISTANCE) {
-            Chunk chunk = generatedChunks.Dequeue();
-            chunksInspector.Remove(chunk.GetPosition());  // For inspector only
+            generatedChunks.TryDequeue(out Chunk chunk);
             chunk.Clear();
         }
     }
@@ -149,9 +153,11 @@ public class TerrainGenerator : MonoBehaviour {
         return new Vector2Int(Mathf.FloorToInt(position.x / CHUNK_SIZE), Mathf.FloorToInt(position.z / CHUNK_SIZE));
     }
 
-    #region Event Handlers
-    
-    #endregion
+    private void UpdateInspector() {
+        chunksInspector = generatedChunks.Select(chunk => new Vector2(chunk.GetPosition().x, chunk.GetPosition().y)).ToList();
+        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
+        TotalVertices = generatedChunks.Sum(chunk => chunk.GetVertexCount());
+    }
 
     #region demos
     private void GenerateTerrain() {

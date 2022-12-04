@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 [RequireComponent(typeof(Chunk))]
@@ -99,6 +100,9 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         }
     }
 
+    /// <summary>
+    /// Removes all blocks from chunk
+    /// </summary>
     public void Clear() {
         blocks.Clear();     
         Destroy(gameObject);    // Remove chunk game object from scene
@@ -106,8 +110,12 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     
     public void Render() {
         meshRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
+        Profiler.BeginSample("Generating mesh");
         GenerateOptimizedMesh();
+        Profiler.EndSample();
+        Profiler.BeginSample("Applying mesh");
         UploadMesh();
+        Profiler.EndSample();
     }
 
     /// <summary>
