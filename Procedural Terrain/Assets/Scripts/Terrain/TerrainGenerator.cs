@@ -117,12 +117,13 @@ public class TerrainGenerator : MonoBehaviour {
     private void RenderChunk(Chunk chunk) {
         // Add chunk to queue of generated chunks
         generatedChunks.Enqueue(chunk);
-        chunksInspector.Add(chunk.GetPosition());
-        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
 
         // Render chunk
         chunk.Render();
 
+        // Update inspector
+        chunksInspector.Add(chunk.GetPosition());
+        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
         TotalVertices += chunk.GetVertexCount();
     }
 
@@ -175,7 +176,7 @@ public class TerrainGenerator : MonoBehaviour {
         }
     }
 
-        /// <summary>
+    /// <summary>
     /// Fills a chunk with blocks
     /// Only used for demonstration purposes
     /// </summary>
@@ -193,7 +194,7 @@ public class TerrainGenerator : MonoBehaviour {
         // Fill chunk
         chunk.SetPosition(chunkX, chunkZ);
         chunk.SetParent(transform);
-        chunk.Fill(20);
+        chunk.Fill();
 
         // Add chunk to queue of generated chunks
         generatedChunks.Enqueue(chunk);
@@ -201,10 +202,10 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void PlaceBlock(int x, int y, int z) {
-        Block block = ScriptableObject.CreateInstance<Block>();
-        block.SetPosition(x, y, z);
-        block.SetParent(transform);
-        block.Render();
+        // Block block = ScriptableObject.CreateInstance<Block>();
+        // block.SetPosition(x, y, z);
+        // block.SetParent(transform);
+        // block.Render();
     }
 
     private void FillUnderground(int x, int y, int z) {

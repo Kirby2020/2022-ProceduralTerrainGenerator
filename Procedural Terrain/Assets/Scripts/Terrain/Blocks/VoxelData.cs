@@ -4,7 +4,7 @@ using UnityEngine;
 /// Static class that contains data for a voxel.
 /// Original code from: https://github.com/pixelreyn/VoxelProjectSeries/tree/Part2-FirstChunk
 /// </summary>
-public static class Voxel {
+public struct VoxelData {
     public static readonly Vector3[] voxelVertices = new Vector3[8] {
         new Vector3(0,0,0),//0
         new Vector3(1,0,0),//1
