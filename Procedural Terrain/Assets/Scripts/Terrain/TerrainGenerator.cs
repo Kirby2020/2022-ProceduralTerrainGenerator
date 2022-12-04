@@ -83,11 +83,11 @@ public class TerrainGenerator : MonoBehaviour {
         // Generate chunks in parallel
         Parallel.ForEach(chunksToGenerate, chunk => {
             chunk.GenerateHeightMap(terrainNoise);
+            chunk.Generate();
         });
 
         // Render chunks
         foreach (Chunk chunk in chunksToGenerate) {
-            chunk.Generate();
             RenderChunk(chunk);
         }
     }
