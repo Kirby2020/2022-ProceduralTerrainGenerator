@@ -110,6 +110,10 @@ public class TerrainGenerator : MonoBehaviour {
         return chunk;
     }
 
+    /// <summary>
+    /// Render chunk ans add it to the queue of generated chunks.
+    /// </summary>
+    /// <param name="chunk">Chunk to render</param>
     private void RenderChunk(Chunk chunk) {
         // Add chunk to queue of generated chunks
         generatedChunks.Enqueue(chunk);
@@ -122,6 +126,9 @@ public class TerrainGenerator : MonoBehaviour {
         TotalVertices += chunk.GetVertexCount();
     }
 
+    /// <summary>
+    /// Remove chunks that are too far away from the player.
+    /// </summary>
     private void UnloadChunks() {
         while (generatedChunks.Count > 20 * RENDER_DISTANCE * RENDER_DISTANCE) {
             Chunk chunk = generatedChunks.Dequeue();

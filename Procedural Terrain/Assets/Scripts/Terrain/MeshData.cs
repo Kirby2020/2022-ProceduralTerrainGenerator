@@ -1,6 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Struct that holds the data for a mesh.
+/// Methods are available to set the mesh and optimize it
+/// and to clear the mesh data.
+/// Original code from: https://github.com/pixelreyn/VoxelProjectSeries/tree/Part2-FirstChunk
+/// </summary>
 public struct MeshData {
     public Mesh mesh;
     public List<Vector3> vertices;
