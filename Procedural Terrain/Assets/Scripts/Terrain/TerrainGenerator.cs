@@ -25,8 +25,6 @@ public class TerrainGenerator : MonoBehaviour {
 
     private void Awake() {
         SetTerrainNoise();
-        generatedChunks = new Queue<Chunk>();
-        
         GenerateSpawnChunks();   // Generates spawn chunks
     }
 

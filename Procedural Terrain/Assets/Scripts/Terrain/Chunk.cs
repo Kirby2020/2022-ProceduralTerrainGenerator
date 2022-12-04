@@ -68,7 +68,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
             Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
                 int height = heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z];
-                for (int k = height; k <= height; k++) {
+                for (int k = height - 3; k <= height; k++) {
                     // Top block
                     if (k == height) {
                         CreateBlock(i, k, j, BlockType.Grass);
@@ -106,10 +106,13 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     
     public void Render() {
         meshRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
-        GenerateMesh();
+        GenerateOptimizedMesh();
         UploadMesh();
     }
 
+    /// <summary>
+    /// Generates a mesh for the chunk
+    /// </summary>
     private void GenerateMesh(){
         Vector3 blockPos;
         Block block;
@@ -122,9 +125,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
         foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
             blockPos = kvp.Key;
-            block = kvp.Value;
-
-            if (!block.IsSolid) continue;            
+            block = kvp.Value;       
 
             //Iterate over each face direction
             for (int i = 0; i < 6; i++) {     
@@ -146,6 +147,50 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         }
     }
 
+    /// <summary>
+    /// Generates an optimized mesh by looking at neighboring blocks and only drawing faces that are visible.
+    /// </summary>
+    private void GenerateOptimizedMesh(){
+        Vector3Int blockPos;
+        Block block;
+
+        meshData.ClearData();
+
+        int counter = 0;
+        Vector3[] faceVertices = new Vector3[4];
+        Vector2[] faceUVs = new Vector2[4];
+
+        foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
+            blockPos = kvp.Key;
+            block = kvp.Value;         
+
+            // Get neighboring blocks
+            Block[] neighbors = GetNeighbors(blockPos);
+
+            //Iterate over each face direction
+            for (int i = 0; i < 6; i++) {     
+                //Draw this face
+
+                //Collect the appropriate vertices from the default vertices and add the block position
+                for (int j = 0; j < 4; j++) {
+                    faceVertices[j] = VoxelData.voxelVertices[VoxelData.voxelVertexIndex[i, j]] + blockPos;
+                    faceUVs[j] = VoxelData.voxelUVs[j];
+                }
+
+                // Check if neighbor is solid
+                if (neighbors[i] == null || !neighbors[i].IsSolid) {
+                    for (int j = 0; j < 6; j++) {
+                        meshData.vertices.Add(faceVertices[VoxelData.voxelTris[i, j]]);
+                        meshData.UVs.Add(faceUVs[VoxelData.voxelTris[i, j]]);
+
+                        meshData.triangles.Add(counter++);
+                    }
+                }
+            }
+
+        }
+    }
+
     private void UploadMesh() {
         meshData.UploadMesh();
 
@@ -153,6 +198,29 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
         if (meshData.vertices.Count > 3)
             meshCollider.sharedMesh = meshData.mesh;
+    }
+
+    private Block[] GetNeighbors(Vector3Int blockPos) {
+        Block[] neighbors = new Block[6];
+
+        for (int i = 0; i < 6; i++) {
+            Vector3Int neighborPos = blockPos + new Vector3Int(
+                Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].x), 
+                Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].y),
+                Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].z)
+            );
+            neighbors[i] = GetBlock(neighborPos);
+        }
+
+        return neighbors;
+    }
+
+    private Block GetBlock(Vector3Int blockPos) {
+        if (blocks.TryGetValue(blockPos, out Block block)) {
+            return block;
+        }
+
+        return null;
     }
 
     private Vector3Int GetChunkCoordinates() {
