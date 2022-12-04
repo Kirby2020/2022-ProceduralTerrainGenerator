@@ -328,6 +328,7 @@ MonoBehaviour:
   player: {fileID: 963194228}
   chunksInspector: []
   blockCount: 0
+  TotalVertices: 0
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,13 +406,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.16043007, y: 0.37686962, z: -0.06645232, w: 0.9098437}
-  m_LocalPosition: {x: 0, y: 70, z: 0}
+  m_LocalRotation: {x: 0.113458835, y: -0.86816835, z: 0.23262505, w: 0.42343405}
+  m_LocalPosition: {x: 40, y: 60, z: 25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 20, y: 45, z: 0}
+  m_LocalEulerAnglesHint: {x: 30, y: -128, z: 0}
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0

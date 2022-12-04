@@ -68,7 +68,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
             Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
                 int height = heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z];
-                for (int k = height - 3; k <= height; k++) {
+                for (int k = MIN_HEIGHT; k <= height; k++) {
                     // Top block
                     if (k == height) {
                         CreateBlock(i, k, j, BlockType.Grass);
@@ -140,7 +140,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                 for (int j = 0; j < 6; j++) {
                     meshData.vertices.Add(faceVertices[VoxelData.voxelTris[i, j]]);
                     meshData.UVs.Add(faceUVs[VoxelData.voxelTris[i, j]]);
-
                     meshData.triangles.Add(counter++);
                 }
             }
@@ -162,32 +161,29 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
         foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
             blockPos = kvp.Key;
-            block = kvp.Value;         
+            block = kvp.Value;            
 
             // Get neighboring blocks
             Block[] neighbors = GetNeighbors(blockPos);
 
-            //Iterate over each face direction
-            for (int i = 0; i < 6; i++) {     
-                //Draw this face
-
-                //Collect the appropriate vertices from the default vertices and add the block position
-                for (int j = 0; j < 4; j++) {
-                    faceVertices[j] = VoxelData.voxelVertices[VoxelData.voxelVertexIndex[i, j]] + blockPos;
-                    faceUVs[j] = VoxelData.voxelUVs[j];
+            // Iterate over each face direction
+            for (int directionIndex = 0; directionIndex < 6; directionIndex++) {     
+                // Collect the appropriate vertices from the default vertices and add the block position
+                for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++) {
+                    faceVertices[vertexIndex] = VoxelData.voxelVertices[VoxelData.voxelVertexIndex[directionIndex, vertexIndex]] + blockPos;
+                    faceUVs[vertexIndex] = VoxelData.voxelUVs[vertexIndex];
                 }
 
-                // Check if neighbor is solid
-                if (neighbors[i] == null || !neighbors[i].IsSolid) {
-                    for (int j = 0; j < 6; j++) {
-                        meshData.vertices.Add(faceVertices[VoxelData.voxelTris[i, j]]);
-                        meshData.UVs.Add(faceUVs[VoxelData.voxelTris[i, j]]);
-
+                // If neighbor is empty or not solid
+                if (neighbors[directionIndex] == null || !neighbors[directionIndex].IsSolid) {
+                    // Draw this face
+                    for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
+                        meshData.vertices.Add(faceVertices[VoxelData.voxelTris[directionIndex, vertexIndex]]);
+                        meshData.UVs.Add(faceUVs[VoxelData.voxelTris[directionIndex, vertexIndex]]);
                         meshData.triangles.Add(counter++);
                     }
                 }
             }
-
         }
     }
 
@@ -204,6 +200,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Block[] neighbors = new Block[6];
 
         for (int i = 0; i < 6; i++) {
+            // Vector3Int neighborPos = blockPos + VoxelData.faceChecks[i];
+            // TODO: cast all VoxelData to Vector3Int
             Vector3Int neighborPos = blockPos + new Vector3Int(
                 Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].x), 
                 Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].y),
