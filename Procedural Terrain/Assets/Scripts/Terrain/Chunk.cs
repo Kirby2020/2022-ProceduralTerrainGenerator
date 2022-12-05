@@ -200,8 +200,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
         meshFilter.mesh = meshData.mesh;
 
-        if (meshData.vertices.Count > 3)
-            meshCollider.sharedMesh = meshData.mesh;
+        if (meshData.vertices.Count > 3) {}
+            //meshCollider.sharedMesh = meshData.mesh;
     }
 
     private Block[] GetNeighbors(Vector3Int blockPos) {

@@ -1,7 +1,9 @@
 using System;
 using System.Threading;
 using System.Collections;
+using Unity.Collections;
 using System.Collections.Generic;
+using Unity.Jobs;
 using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
@@ -11,7 +13,10 @@ using System.Collections.Concurrent;
 
 public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private Transform player;
-    private ConcurrentQueue<Chunk> generatedChunks = new ConcurrentQueue<Chunk>();  // Queue of chunks that have been generated
+    private Queue<Chunk> chunksToGenerate = new Queue<Chunk>(); // Queue of chunks to generate
+    private Queue<Chunk> chunksToRender = new Queue<Chunk>();   // Queue of chunks to render
+    private Queue<Chunk> chunksOverflowBuffer = new Queue<Chunk>();   // Overflow buffer for chunks
+    private ConcurrentQueue<Chunk> renderedChunks = new ConcurrentQueue<Chunk>();  // Queue of chunks that have been generated
     [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
     [SerializeField] private int blockCount = 0;
     [SerializeField] private int TotalVertices = 0;
@@ -37,7 +42,7 @@ public class TerrainGenerator : MonoBehaviour {
         GeneratePlayerChunks();
 
         // Remove chunks that are too far away
-        UnloadChunks();
+        // UnloadChunks();
     }
 
     private void SetTerrainNoise() {
@@ -66,15 +71,12 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void GeneratePlayerChunks() {
-        var chunksToGenerate = new Queue<Chunk>();
-
         // Get chunk coordinates of player
         Vector2Int playerChunk = GetChunkPosition(player.position);
 
         int min = -RENDER_DISTANCE / 2;  
         int max = RENDER_DISTANCE / 2;
 
-        Profiler.BeginSample("Creating Chunks");
         // Load all chunks around player with radius min to max ( = renderDistance )
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
@@ -82,24 +84,50 @@ public class TerrainGenerator : MonoBehaviour {
                 Chunk chunk = CreateChunk(chunkPosition.x, chunkPosition.y);
                 if (chunk == null) continue;    // Chunk already exists, no need to generate
                 chunksToGenerate.Enqueue(chunk);
+                chunksToRender.Enqueue(chunk);
             }
         }
-        Profiler.EndSample();
 
-        Profiler.BeginSample("Generating Chunks");
-        // Generate chunks in parallel
-        Parallel.ForEach(chunksToGenerate, chunk => {
+        StartCoroutine(GenerateChunks());
+        StartCoroutine(RenderChunks());
+    }
+
+    private IEnumerator GenerateChunks() {
+        int maxChunksToGenerate = RENDER_DISTANCE * RENDER_DISTANCE;
+
+        if (chunksToGenerate.Count > maxChunksToGenerate) {
+            // If there are too many chunks to generate,
+            // Add chunks to overflow queue and generate them later
+            Debug.LogWarning("Too many chunks to generate, adding to overflow buffer: " + chunksOverflowBuffer.Count);
+            for (int i = 0; i < chunksToGenerate.Count - maxChunksToGenerate; i++) {
+                Chunk chunk = chunksToGenerate.Dequeue();
+                chunksOverflowBuffer.Enqueue(chunk);
+            }
+            yield return null;
+        }
+        while (chunksToGenerate.Count > 0) {
+            Debug.Log("Remaining chunks to generate: " + chunksToGenerate.Count);
+            Chunk chunk = chunksToGenerate.Dequeue();
             chunk.GenerateHeightMap(terrainNoise);
             chunk.Generate();
-        });
-        Profiler.EndSample();
-
-        Profiler.BeginSample("Rendering Chunks");
-        // Render chunks
-        foreach (Chunk chunk in chunksToGenerate) {
-            RenderChunk(chunk);
+            yield break;
         }
-        Profiler.EndSample();
+        if (chunksToGenerate.Count == 0 && chunksOverflowBuffer.Count > 0) {
+            Debug.Log("Emptying overflow buffer");
+            while (chunksOverflowBuffer.Count > 0) {
+                chunksToGenerate.Enqueue(chunksOverflowBuffer.Dequeue());
+                yield break;
+            }
+        }
+        
+    }
+
+    private IEnumerator RenderChunks() {
+        while (chunksToRender.Count > 0) {
+            Chunk chunk = chunksToRender.Dequeue();
+            RenderChunk(chunk);
+            yield break;
+        }
     }
 
     /// <summary>
@@ -109,8 +137,7 @@ public class TerrainGenerator : MonoBehaviour {
     /// <param name="chunkX">X position of the chunk</param>
     /// <param name="chunkZ">Z position of the chunk</param>
     private Chunk CreateChunk(int chunkX, int chunkZ) {
-        // If a chunk already exists at this position, return null
-        if (generatedChunks.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return null;
+        if (ChunkExists(chunkX, chunkZ)) return null;  // Chunk already exists
 
         // Else: create a new chunk
         Chunk chunk = new GameObject($"Chunk {chunkX}, {chunkZ}").AddComponent<Chunk>();
@@ -121,24 +148,33 @@ public class TerrainGenerator : MonoBehaviour {
         return chunk;
     }
 
+    private bool ChunkExists(int chunkX, int chunkZ) {
+        // If a chunk already exists at this position, return null
+        if (renderedChunks.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return true;
+        if (chunksToGenerate.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return true;
+        if (chunksToRender.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return true;
+        return false;
+    }
+
     /// <summary>
     /// Render chunk ans add it to the queue of generated chunks.
     /// </summary>
     /// <param name="chunk">Chunk to render</param>
     private void RenderChunk(Chunk chunk) {
-        // Add chunk to queue of generated chunks
-        generatedChunks.Enqueue(chunk);
-    
+        if (chunk == null) return; // Chunk not generated yet
         // Render chunk
         chunk.Render();
+
+        // Add chunk to queue of generated chunks
+        renderedChunks.Enqueue(chunk);
     }
 
     /// <summary>
     /// Remove chunks that are too far away from the player.
     /// </summary>
     private void UnloadChunks() {
-        while (generatedChunks.Count > 20 * RENDER_DISTANCE * RENDER_DISTANCE) {
-            generatedChunks.TryDequeue(out Chunk chunk);
+        while (renderedChunks.Count > 20 * RENDER_DISTANCE * RENDER_DISTANCE) {
+            renderedChunks.TryDequeue(out Chunk chunk);
             chunk.Clear();
         }
     }
@@ -154,10 +190,11 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void UpdateInspector() {
-        chunksInspector = generatedChunks.Select(chunk => new Vector2(chunk.GetPosition().x, chunk.GetPosition().y)).ToList();
-        blockCount = generatedChunks.Sum(chunk => chunk.GetBlockCount());
-        TotalVertices = generatedChunks.Sum(chunk => chunk.GetVertexCount());
+        chunksInspector = renderedChunks.Select(chunk => new Vector2(chunk.GetPosition().x, chunk.GetPosition().y)).ToList();
+        blockCount = renderedChunks.Sum(chunk => chunk.GetBlockCount());
+        TotalVertices = renderedChunks.Sum(chunk => chunk.GetVertexCount());
     }
+
 
     #region demos
     private void GenerateTerrain() {
@@ -191,7 +228,7 @@ public class TerrainGenerator : MonoBehaviour {
     /// <param name="chunkZ">Z position of the chunk</param>
     private void FillChunk(int chunkX, int chunkZ) {
         // Check if chunk has already been generated
-        if (generatedChunks.Any(chunk => chunk.GetPosition().x == chunkX && chunk.GetPosition().y == chunkZ)) {
+        if (renderedChunks.Any(chunk => chunk.GetPosition().x == chunkX && chunk.GetPosition().y == chunkZ)) {
             return;
         }
 
@@ -204,7 +241,7 @@ public class TerrainGenerator : MonoBehaviour {
         chunk.Fill();
 
         // Add chunk to queue of generated chunks
-        generatedChunks.Enqueue(chunk);
+        renderedChunks.Enqueue(chunk);
         chunksInspector.Add(chunk.GetPosition());  // For inspector only
     }
 
