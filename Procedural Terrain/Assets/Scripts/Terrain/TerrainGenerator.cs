@@ -84,7 +84,6 @@ public class TerrainGenerator : MonoBehaviour {
                 Chunk chunk = CreateChunk(chunkPosition.x, chunkPosition.y);
                 if (chunk == null) continue;    // Chunk already exists, no need to generate
                 chunksToGenerate.Enqueue(chunk);
-                chunksToRender.Enqueue(chunk);
             }
         }
 
@@ -98,10 +97,11 @@ public class TerrainGenerator : MonoBehaviour {
         if (chunksToGenerate.Count > maxChunksToGenerate) {
             // If there are too many chunks to generate,
             // Add chunks to overflow queue and generate them later
+            // This gives priority to chunks that are closer to the player
             Debug.LogWarning("Too many chunks to generate, adding to overflow buffer: " + chunksOverflowBuffer.Count);
-            for (int i = 0; i < chunksToGenerate.Count - maxChunksToGenerate; i++) {
-                Chunk chunk = chunksToGenerate.Dequeue();
-                chunksOverflowBuffer.Enqueue(chunk);
+            while (chunksToGenerate.Count > 0) {
+                chunksOverflowBuffer.Enqueue(chunksToGenerate.Dequeue());
+                yield break;
             }
             yield return null;
         }
@@ -110,12 +110,14 @@ public class TerrainGenerator : MonoBehaviour {
             Chunk chunk = chunksToGenerate.Dequeue();
             chunk.GenerateHeightMap(terrainNoise);
             chunk.Generate();
+            chunksToRender.Enqueue(chunk);
             yield break;
         }
         if (chunksToGenerate.Count == 0 && chunksOverflowBuffer.Count > 0) {
             Debug.Log("Emptying overflow buffer");
             while (chunksOverflowBuffer.Count > 0) {
-                chunksToGenerate.Enqueue(chunksOverflowBuffer.Dequeue());
+                Chunk chunk = chunksOverflowBuffer.Dequeue();
+                chunksToGenerate.Enqueue(chunk);
                 yield break;
             }
         }
