@@ -11,14 +11,18 @@ public struct MeshData {
     public Mesh mesh;
     public List<Vector3> vertices;
     public List<int> triangles;
+    public List<Color> colors;
     public List<Vector2> UVs;
+    public List<Vector2> UVs2;
     public bool Initialized;
 
     public void ClearData(){
         if (!Initialized) {
             vertices = new List<Vector3>();
             triangles = new List<int>();
+            colors = new List<Color>();
             UVs = new List<Vector2>();
+            UVs2 = new List<Vector2>();
 
             Initialized = true;
             mesh = new Mesh();
@@ -26,7 +30,9 @@ public struct MeshData {
         else {
             vertices.Clear();
             triangles.Clear();
+            colors.Clear();
             UVs.Clear();
+            UVs2.Clear();
 
             mesh.Clear();
         }
@@ -36,7 +42,9 @@ public struct MeshData {
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangles, 0, false);
 
+        mesh.SetColors(colors);
         mesh.SetUVs(0, UVs);
+        mesh.SetUVs(2, UVs2);
 
         mesh.Optimize();
 

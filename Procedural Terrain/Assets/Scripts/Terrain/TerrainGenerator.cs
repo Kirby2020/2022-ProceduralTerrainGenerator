@@ -103,7 +103,6 @@ public class TerrainGenerator : MonoBehaviour {
                 chunksOverflowBuffer.Enqueue(chunksToGenerate.Dequeue());
                 yield break;
             }
-            yield return null;
         }
         while (chunksToGenerate.Count > 0) {
             Debug.Log("Remaining chunks to generate: " + chunksToGenerate.Count);

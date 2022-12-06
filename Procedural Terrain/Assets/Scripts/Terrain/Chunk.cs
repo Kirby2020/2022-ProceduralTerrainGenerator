@@ -166,16 +166,19 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         int counter = 0;
         Vector3[] faceVertices = new Vector3[4];
         Vector2[] faceUVs = new Vector2[4];
+        Block[] neighbors = new Block[6];
+        List<Color> colors = new List<Color>(); 
 
         foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
+            Profiler.BeginSample("Iterating over block");
             blockPos = kvp.Key;
             block = kvp.Value;            
 
             // Get neighboring blocks
-            Block[] neighbors = GetNeighbors(blockPos);
+            neighbors = GetNeighbors(blockPos);
 
             // Iterate over each face direction
-            for (int directionIndex = 0; directionIndex < 6; directionIndex++) {     
+            for (int directionIndex = 0; directionIndex < 6; directionIndex++) {   
                 // Collect the appropriate vertices from the default vertices and add the block position
                 for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++) {
                     faceVertices[vertexIndex] = VoxelData.voxelVertices[VoxelData.voxelVertexIndex[directionIndex, vertexIndex]] + blockPos;
@@ -187,11 +190,14 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                     // Draw this face
                     for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
                         meshData.vertices.Add(faceVertices[VoxelData.voxelTris[directionIndex, vertexIndex]]);
+                        meshData.colors.Add(Color.black);
                         meshData.UVs.Add(faceUVs[VoxelData.voxelTris[directionIndex, vertexIndex]]);
+                        meshData.UVs2.Add(new Vector2(0, 0));
                         meshData.triangles.Add(counter++);
                     }
                 }
             }
+            Profiler.EndSample();
         }
     }
 
