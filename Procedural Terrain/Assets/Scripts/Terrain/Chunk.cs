@@ -139,10 +139,10 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             for (int i = 0; i < 6; i++) {     
                 //Draw this face
 
-                //Collect the appropriate vertices from the default vertices and add the block position
+                //Collect the appropriate vertices from the default vertices and add the block position                
                 for (int j = 0; j < 4; j++) {
                     faceVertices[j] = VoxelData.voxelVertices[VoxelData.voxelVertexIndex[i, j]] + blockPos;
-                    faceUVs[j] = VoxelData.voxelUVs[j];
+                    faceUVs[j] = VoxelData.voxelUVs[j];                
                 }
 
                 for (int j = 0; j < 6; j++) {
@@ -178,7 +178,24 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             neighbors = GetNeighbors(blockPos);
 
             // Iterate over each face direction
-            for (int directionIndex = 0; directionIndex < 6; directionIndex++) {   
+            for (int directionIndex = 0; directionIndex < 6; directionIndex++) {         
+                switch (block.Type) {
+                    case BlockType.Grass:
+                        colors.Add(Color.green);
+                        break;
+                    case BlockType.Dirt:
+                        colors.Add(Color.yellow);
+                        break;
+                    case BlockType.Stone:
+                        colors.Add(Color.gray);
+                        break;
+                    case BlockType.Bedrock:
+                        colors.Add(Color.black);
+                        break;
+                    default:
+                        colors.Add(Color.white);
+                        break;
+                }
                 // Collect the appropriate vertices from the default vertices and add the block position
                 for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++) {
                     faceVertices[vertexIndex] = VoxelData.voxelVertices[VoxelData.voxelVertexIndex[directionIndex, vertexIndex]] + blockPos;
@@ -190,9 +207,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                     // Draw this face
                     for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
                         meshData.vertices.Add(faceVertices[VoxelData.voxelTris[directionIndex, vertexIndex]]);
-                        meshData.colors.Add(Color.black);
                         meshData.UVs.Add(faceUVs[VoxelData.voxelTris[directionIndex, vertexIndex]]);
-                        meshData.UVs2.Add(new Vector2(0, 0));
                         meshData.triangles.Add(counter++);
                     }
                 }
