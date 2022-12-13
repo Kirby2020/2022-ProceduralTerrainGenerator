@@ -10,8 +10,8 @@ using UnityEngine.Profiling;
 [RequireComponent(typeof(Chunk))]
 public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int MAX_HEIGHT = 60;  // Maximum height of terrain
-    private const int SEA_LEVEL = 30;   // Base terrain height
+    private const int MAX_HEIGHT = 100;  // Maximum height of terrain
+    private const int SEA_LEVEL = 60;   // Base terrain height
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private MeshData meshData = new MeshData(); // Mesh data for chunk
     private MeshRenderer meshRenderer;  

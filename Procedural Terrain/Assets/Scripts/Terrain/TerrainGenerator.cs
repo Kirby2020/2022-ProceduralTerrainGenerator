@@ -22,10 +22,10 @@ public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private int blockCount = 0;
     [SerializeField] private int TotalVertices = 0;
     private FractalNoise terrainNoise;  // Main noise map for terrain height
-    private const int MAX_HEIGHT = 40;  // Maximum height of terrain
+    private const int MAX_HEIGHT = 100;  // Maximum height of terrain
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int RENDER_DISTANCE = 4;     // How many chunks to render around player
+    private const int RENDER_DISTANCE = 16;     // How many chunks to render around player
     private const int SEA_LEVEL = 40;          // Base terrain height
     private Thread chunkGeneratorThread;  // Thread for generating chunks
 
