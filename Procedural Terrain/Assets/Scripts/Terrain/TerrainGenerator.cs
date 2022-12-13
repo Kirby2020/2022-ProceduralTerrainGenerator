@@ -13,6 +13,7 @@ using System.Collections.Concurrent;
 
 public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private Transform player;
+    [SerializeField] private Material worldMaterial;
     private Queue<Chunk> chunksToGenerate = new Queue<Chunk>(); // Queue of chunks to generate
     private Queue<Chunk> chunksToRender = new Queue<Chunk>();   // Queue of chunks to render
     private Queue<Chunk> chunksOverflowBuffer = new Queue<Chunk>();   // Overflow buffer for chunks
@@ -26,7 +27,6 @@ public class TerrainGenerator : MonoBehaviour {
     private const int CHUNK_SIZE = 16;  // Size of each chunk
     private const int RENDER_DISTANCE = 4;     // How many chunks to render around player
     private const int SEA_LEVEL = 40;          // Base terrain height
-
     private Thread chunkGeneratorThread;  // Thread for generating chunks
 
 
@@ -36,6 +36,7 @@ public class TerrainGenerator : MonoBehaviour {
 
         InvokeRepeating("UpdateInspector", 0, 5);  // Updates inspector every second
     }
+
 
     private void Update() {
         // Generate extra chunks as player moves
@@ -144,6 +145,7 @@ public class TerrainGenerator : MonoBehaviour {
         Chunk chunk = new GameObject($"Chunk {chunkX}, {chunkZ}").AddComponent<Chunk>();
         chunk.SetPosition(chunkX, chunkZ);
         chunk.SetParent(transform);
+        chunk.SetMaterial(worldMaterial);
         chunk.Initialize();
 
         return chunk;

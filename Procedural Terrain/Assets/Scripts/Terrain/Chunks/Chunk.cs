@@ -17,6 +17,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private MeshRenderer meshRenderer;  
     private MeshCollider meshCollider;
     private MeshFilter meshFilter;
+    private Material material;
     private ConcurrentDictionary<Vector3Int, Block> blocks { get; set; } = new ConcurrentDictionary<Vector3Int, Block>(); // Dictionary of blocks in chunk
     private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
@@ -32,6 +33,10 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
     public void SetParent(Transform parent) {
         transform.parent = parent;
+    }
+
+    public void SetMaterial(Material material) {
+        this.material = material;
     }
 
     public int GetBlockCount() {
@@ -109,7 +114,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
     
     public void Render() {
-        meshRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
+        meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
         Profiler.BeginSample("Generating mesh");
         GenerateOptimizedMesh();
         Profiler.EndSample();
@@ -124,6 +129,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private void GenerateMesh(){
         Vector3 blockPos;
         Block block;
+        Color color;
+        Vector2 smoothness = new Vector2(0, 0);
 
         meshData.ClearData();
 
@@ -133,7 +140,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
         foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
             blockPos = kvp.Key;
-            block = kvp.Value;       
+            block = kvp.Value;     
+            color = block.Color;  
 
             //Iterate over each face direction
             for (int i = 0; i < 6; i++) {     
@@ -148,7 +156,9 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                 for (int j = 0; j < 6; j++) {
                     meshData.vertices.Add(faceVertices[VoxelData.voxelTris[i, j]]);
                     meshData.UVs.Add(faceUVs[VoxelData.voxelTris[i, j]]);
+                    meshData.UVs2.Add(smoothness);
                     meshData.triangles.Add(counter++);
+                    meshData.colors.Add(color);
                 }
             }
         }
@@ -160,6 +170,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private void GenerateOptimizedMesh(){
         Vector3Int blockPos;
         Block block;
+        Color color;
+        Vector2 smoothness = new Vector2(0, 0);
 
         meshData.ClearData();
 
@@ -167,35 +179,18 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Vector3[] faceVertices = new Vector3[4];
         Vector2[] faceUVs = new Vector2[4];
         Block[] neighbors = new Block[6];
-        List<Color> colors = new List<Color>(); 
 
         foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
             Profiler.BeginSample("Iterating over block");
             blockPos = kvp.Key;
-            block = kvp.Value;            
+            block = kvp.Value;    
+            color = block.Color;        
 
             // Get neighboring blocks
             neighbors = GetNeighbors(blockPos);
 
             // Iterate over each face direction
-            for (int directionIndex = 0; directionIndex < 6; directionIndex++) {         
-                switch (block.Type) {
-                    case BlockType.Grass:
-                        colors.Add(Color.green);
-                        break;
-                    case BlockType.Dirt:
-                        colors.Add(Color.yellow);
-                        break;
-                    case BlockType.Stone:
-                        colors.Add(Color.gray);
-                        break;
-                    case BlockType.Bedrock:
-                        colors.Add(Color.black);
-                        break;
-                    default:
-                        colors.Add(Color.white);
-                        break;
-                }
+            for (int directionIndex = 0; directionIndex < 6; directionIndex++) {   
                 // Collect the appropriate vertices from the default vertices and add the block position
                 for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++) {
                     faceVertices[vertexIndex] = VoxelData.voxelVertices[VoxelData.voxelVertexIndex[directionIndex, vertexIndex]] + blockPos;
@@ -207,7 +202,9 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                     // Draw this face
                     for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
                         meshData.vertices.Add(faceVertices[VoxelData.voxelTris[directionIndex, vertexIndex]]);
+                        meshData.colors.Add(color);
                         meshData.UVs.Add(faceUVs[VoxelData.voxelTris[directionIndex, vertexIndex]]);
+                        meshData.UVs2.Add(smoothness);
                         meshData.triangles.Add(counter++);
                     }
                 }
@@ -264,12 +261,12 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
 
     private Block CreateBlockFromType(BlockType type) {
-        return new StoneBlock();
-        // switch (type) {
-        //     case BlockType.Stone:
-        //         return new StoneBlock();
-        //     default: return new StoneBlock();
-        // }
+        switch (type) {
+            case BlockType.Stone: return new StoneBlock();
+            case BlockType.Grass: return new GrassBlock();
+            case BlockType.Dirt : return new DirtBlock();
+            default: return new StoneBlock();
+        }
     }
 
     int IComparer<Chunk>.Compare(Chunk x, Chunk y){
