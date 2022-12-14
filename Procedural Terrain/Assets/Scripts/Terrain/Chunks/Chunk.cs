@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -10,7 +12,7 @@ using UnityEngine.Profiling;
 [RequireComponent(typeof(Chunk))]
 public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int MAX_HEIGHT = 100;  // Maximum height of terrain
+    private const int MAX_HEIGHT = 140;  // Maximum height of terrain
     private const int SEA_LEVEL = 60;   // Base terrain height
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private MeshData meshData = new MeshData(); // Mesh data for chunk
@@ -21,6 +23,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private ConcurrentDictionary<Vector3Int, Block> blocks { get; set; } = new ConcurrentDictionary<Vector3Int, Block>(); // Dictionary of blocks in chunk
     private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
+    private bool isRendered = false;   
+
 
     #region Getters & Setters
     public void SetPosition(int x, int z) {
@@ -37,6 +41,10 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
     public void SetMaterial(Material material) {
         this.material = material;
+    }
+
+    public bool IsRendered() {
+        return isRendered;
     }
 
     public int GetBlockCount() {
@@ -62,7 +70,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
                 // Subtract chunk coordinates to get local coordinates in chunk (0,0) to (ChunkSize - 1, ChunkSize - 1)
                 heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z] = 
-                    SEA_LEVEL + Mathf.FloorToInt((float)terrainNoise.NoiseCombinedOctaves(i,j) *
+                    SEA_LEVEL + Mathf.FloorToInt((float)(terrainNoise.NoiseCombinedOctaves(i,j) + 0.5f) *
                     (float)terrainNoise.Amplitude);
             });
         });
@@ -74,16 +82,20 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
             Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
                 int height = heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z];
+                if (height > MAX_HEIGHT) height = MAX_HEIGHT;
+                if (height < MIN_HEIGHT) height = MIN_HEIGHT;
+
                 for (int k = MIN_HEIGHT; k <= height; k++) {
+                    // Bottom block
+                    if (k == MIN_HEIGHT) {
+                        CreateBlock(i, k, j, BlockType.Bedrock);
+                    }
                     // Top block
-                    if (k == height) {
+                    else if (k == height) {
                         CreateBlock(i, k, j, BlockType.Grass);
                     }
                     else if (k > height - 3) {
                         CreateBlock(i, k, j, BlockType.Dirt);
-                    }
-                    else if (k == MIN_HEIGHT) {
-                        CreateBlock(i, k, j, BlockType.Bedrock);
                     }
                     else {
                         CreateBlock(i, k, j, BlockType.Stone);
@@ -115,12 +127,17 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     
     public void Render() {
         meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
+
         Profiler.BeginSample("Generating mesh");
-        GenerateOptimizedMesh();
+
+
+
         Profiler.EndSample();
         Profiler.BeginSample("Applying mesh");
         UploadMesh();
         Profiler.EndSample();
+        isRendered = true;
+
     }
 
     /// <summary>
@@ -213,6 +230,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         }
     }
 
+
     private void UploadMesh() {
         meshData.UploadMesh();
 
@@ -265,6 +283,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             case BlockType.Stone: return new StoneBlock();
             case BlockType.Grass: return new GrassBlock();
             case BlockType.Dirt : return new DirtBlock();
+            case BlockType.Bedrock: return new BedrockBlock();
             default: return new StoneBlock();
         }
     }

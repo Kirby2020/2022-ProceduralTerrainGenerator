@@ -22,11 +22,7 @@ public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private int blockCount = 0;
     [SerializeField] private int TotalVertices = 0;
     private FractalNoise terrainNoise;  // Main noise map for terrain height
-    private const int MAX_HEIGHT = 100;  // Maximum height of terrain
-    private const int MIN_HEIGHT = 0;   // Minimum height of terrain
-    private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int RENDER_DISTANCE = 16;     // How many chunks to render around player
-    private const int SEA_LEVEL = 40;          // Base terrain height
+    private const int RENDER_DISTANCE = 8;     // How many chunks to render around player
     private Thread chunkGeneratorThread;  // Thread for generating chunks
 
 
@@ -49,8 +45,8 @@ public class TerrainGenerator : MonoBehaviour {
     private void SetTerrainNoise() {
         terrainNoise = ScriptableObject.CreateInstance<FractalNoise>();
         terrainNoise.SetSeed(0);
-        terrainNoise.Amplitude = MAX_HEIGHT;
-        terrainNoise.Frequency = 0.005f;
+        terrainNoise.Amplitude = 50f;
+        terrainNoise.Frequency = 0.003f;
         terrainNoise.Octaves = 4;
         terrainNoise.Lacunarity = 2f;
         terrainNoise.Persistence = 0.5f;        
@@ -127,7 +123,7 @@ public class TerrainGenerator : MonoBehaviour {
     private IEnumerator RenderChunks() {
         while (chunksToRender.Count > 0) {
             Chunk chunk = chunksToRender.Dequeue();
-            RenderChunk(chunk);
+            StartCoroutine(RenderChunk(chunk));
             yield break;
         }
     }
@@ -141,7 +137,6 @@ public class TerrainGenerator : MonoBehaviour {
     private Chunk CreateChunk(int chunkX, int chunkZ) {
         if (ChunkExists(chunkX, chunkZ)) return null;  // Chunk already exists
 
-        // Else: create a new chunk
         Chunk chunk = new GameObject($"Chunk {chunkX}, {chunkZ}").AddComponent<Chunk>();
         chunk.SetPosition(chunkX, chunkZ);
         chunk.SetParent(transform);
@@ -163,12 +158,10 @@ public class TerrainGenerator : MonoBehaviour {
     /// Render chunk ans add it to the queue of generated chunks.
     /// </summary>
     /// <param name="chunk">Chunk to render</param>
-    private void RenderChunk(Chunk chunk) {
-        if (chunk == null) return; // Chunk not generated yet
-        // Render chunk
+    private IEnumerator RenderChunk(Chunk chunk) {
+        if (chunk == null) yield return null; // Chunk not generated yet
         chunk.Render();
-
-        // Add chunk to queue of generated chunks
+        yield return new WaitUntil(() => chunk.IsRendered());
         renderedChunks.Enqueue(chunk);
     }
 
@@ -189,6 +182,7 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private Vector2Int GetChunkPosition(Vector3 position) {
+        const int CHUNK_SIZE = 16;
         return new Vector2Int(Mathf.FloorToInt(position.x / CHUNK_SIZE), Mathf.FloorToInt(position.z / CHUNK_SIZE));
     }
 
@@ -201,6 +195,8 @@ public class TerrainGenerator : MonoBehaviour {
 
     #region demos
     private void GenerateTerrain() {
+        const int CHUNK_SIZE = 16;
+        const int SEA_LEVEL = 60;
         int minX = (int)player.position.x;
         int minZ = (int)player.position.z;
         for (int x = minX; x < (int)player.position.x + CHUNK_SIZE + (int)player.position.x; x++) {
@@ -214,6 +210,9 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void GenerateFlatTerrain() {
+        const int CHUNK_SIZE = 16;
+        const int SEA_LEVEL = 60;
+
         for (int x = 0; x < CHUNK_SIZE; x++) {
             for (int z = 0; z < CHUNK_SIZE; z++) {
                 for (int y = 0; y < SEA_LEVEL; y++) {
@@ -256,7 +255,7 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void FillUnderground(int x, int y, int z) {
-        for (int i = MIN_HEIGHT; i < y; i++) {
+        for (int i = 0; i < y; i++) {
             PlaceBlock(x, i, z);
         }
     }
