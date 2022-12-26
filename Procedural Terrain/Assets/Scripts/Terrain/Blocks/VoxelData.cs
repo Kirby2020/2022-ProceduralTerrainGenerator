@@ -17,13 +17,13 @@ public struct VoxelData {
         new Vector3(1,1,1),//7
     };
 
-    public static readonly Vector3[] voxelFaceChecks = new Vector3[6] {
-        new Vector3(0,0,-1),//back
-        new Vector3(0,0,1),//front
-        new Vector3(-1,0,0),//left
-        new Vector3(1,0,0),//right
-        new Vector3(0,-1,0),//bottom
-        new Vector3(0,1,0)//top
+    public static readonly Vector3Int[] voxelFaceChecks = new Vector3Int[6] {
+        new Vector3Int(0,0,-1),//back
+        new Vector3Int(0,0,1),//front
+        new Vector3Int(-1,0,0),//left
+        new Vector3Int(1,0,0),//right
+        new Vector3Int(0,-1,0),//bottom
+        new Vector3Int(0,1,0)//top
     };
 
     public static readonly int[,] voxelVertexIndex = new int[6, 4] {

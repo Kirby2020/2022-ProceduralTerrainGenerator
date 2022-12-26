@@ -12,8 +12,8 @@ using UnityEngine.Profiling;
 [RequireComponent(typeof(Chunk))]
 public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int MAX_HEIGHT = 140;  // Maximum height of terrain
-    private const int SEA_LEVEL = 60;   // Base terrain height
+    private const int MAX_HEIGHT = 100;  // Maximum height of terrain
+    private const int SEA_LEVEL = 40;   // Base terrain height
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private MeshData meshData = new MeshData(); // Mesh data for chunk
     private MeshRenderer meshRenderer;  
@@ -99,8 +99,10 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                     }
                     else {
                         CreateBlock(i, k, j, BlockType.Stone);
-                    }
+                    }                 
                 }
+
+                CreateBlock(i, SEA_LEVEL, j, BlockType.Water);
             });
         });
     }
@@ -130,7 +132,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
         Profiler.BeginSample("Generating mesh");
 
-
+        GenerateOptimizedMesh();
 
         Profiler.EndSample();
         Profiler.BeginSample("Applying mesh");
@@ -188,7 +190,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Vector3Int blockPos;
         Block block;
         Color color;
-        Vector2 smoothness = new Vector2(0, 0);
+        Vector2 transparency = new Vector2(1, 1);
 
         meshData.ClearData();
 
@@ -203,7 +205,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             block = kvp.Value;    
             color = block.Color;        
 
-            // Get neighboring blocks
             neighbors = GetNeighbors(blockPos);
 
             // Iterate over each face direction
@@ -214,14 +215,17 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                     faceUVs[vertexIndex] = VoxelData.voxelUVs[vertexIndex];
                 }
 
-                // If neighbor is empty or not solid
-                if (neighbors[directionIndex] == null || !neighbors[directionIndex].IsSolid) {
+                Block neighbor = neighbors[directionIndex];
+                // If the neighbor is null, then there is no block in that direction
+                if (neighbor == null || neighbor.IsTransparent) {
                     // Draw this face
+
+                    transparency = block.IsTransparent ? new Vector2(0.5f, 0.5f) : new Vector2(1, 1);
                     for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
                         meshData.vertices.Add(faceVertices[VoxelData.voxelTris[directionIndex, vertexIndex]]);
                         meshData.colors.Add(color);
                         meshData.UVs.Add(faceUVs[VoxelData.voxelTris[directionIndex, vertexIndex]]);
-                        meshData.UVs2.Add(smoothness);
+                        meshData.UVs2.Add(transparency);
                         meshData.triangles.Add(counter++);
                     }
                 }
@@ -244,13 +248,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Block[] neighbors = new Block[6];
 
         for (int i = 0; i < 6; i++) {
-            // Vector3Int neighborPos = blockPos + VoxelData.faceChecks[i];
-            // TODO: cast all VoxelData to Vector3Int
-            Vector3Int neighborPos = blockPos + new Vector3Int(
-                Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].x), 
-                Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].y),
-                Mathf.FloorToInt(VoxelData.voxelFaceChecks[i].z)
-            );
+            Vector3Int neighborPos = blockPos + VoxelData.voxelFaceChecks[i];
             neighbors[i] = GetBlock(neighborPos);
         }
 
@@ -263,6 +261,10 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         }
 
         return null;
+    }
+
+    private bool IsInChunk(Vector3Int blockPos) {
+        return blockPos.x >= 0 && blockPos.x < CHUNK_SIZE && blockPos.y >= 0 && blockPos.y < CHUNK_SIZE;
     }
 
     private Vector3Int GetChunkCoordinates() {
@@ -284,6 +286,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             case BlockType.Grass: return new GrassBlock();
             case BlockType.Dirt : return new DirtBlock();
             case BlockType.Bedrock: return new BedrockBlock();
+            case BlockType.Water: return new WaterBlock();
             default: return new StoneBlock();
         }
     }

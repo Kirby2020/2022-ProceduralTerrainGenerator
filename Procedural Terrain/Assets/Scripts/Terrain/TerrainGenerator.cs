@@ -123,7 +123,7 @@ public class TerrainGenerator : MonoBehaviour {
     private IEnumerator RenderChunks() {
         while (chunksToRender.Count > 0) {
             Chunk chunk = chunksToRender.Dequeue();
-            StartCoroutine(RenderChunk(chunk));
+            RenderChunk(chunk);
             yield break;
         }
     }
@@ -158,10 +158,9 @@ public class TerrainGenerator : MonoBehaviour {
     /// Render chunk ans add it to the queue of generated chunks.
     /// </summary>
     /// <param name="chunk">Chunk to render</param>
-    private IEnumerator RenderChunk(Chunk chunk) {
-        if (chunk == null) yield return null; // Chunk not generated yet
+    private void RenderChunk(Chunk chunk) {
+        if (chunk == null) return; // Chunk not generated yet
         chunk.Render();
-        yield return new WaitUntil(() => chunk.IsRendered());
         renderedChunks.Enqueue(chunk);
     }
 
