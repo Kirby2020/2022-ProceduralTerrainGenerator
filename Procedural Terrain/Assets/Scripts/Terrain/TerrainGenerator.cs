@@ -14,21 +14,22 @@ using System.Collections.Concurrent;
 public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private Transform player;
     [SerializeField] private Material worldMaterial;
-    private Queue<Chunk> chunksToGenerate = new Queue<Chunk>(); // Queue of chunks to generate
-    private Queue<Chunk> chunksToRender = new Queue<Chunk>();   // Queue of chunks to render
-    private Queue<Chunk> chunksOverflowBuffer = new Queue<Chunk>();   // Overflow buffer for chunks
+    private ConcurrentQueue<Chunk> chunksToGenerate = new ConcurrentQueue<Chunk>(); // Queue of chunks to generate
+    private ConcurrentQueue<Chunk> chunksToRender = new ConcurrentQueue<Chunk>();   // Queue of chunks to render
+    private ConcurrentQueue<Chunk> chunksOverflowBuffer = new ConcurrentQueue<Chunk>();   // Overflow buffer for chunks
     private ConcurrentQueue<Chunk> renderedChunks = new ConcurrentQueue<Chunk>();  // Queue of chunks that have been generated
     [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
     [SerializeField] private int blockCount = 0;
     [SerializeField] private int TotalVertices = 0;
     private FractalNoise terrainNoise;  // Main noise map for terrain height
-    private const int RENDER_DISTANCE = 8;     // How many chunks to render around player
+    private TerrainNoise terrainNoiseTest; 
+    private const int RENDER_DISTANCE = 16;     // How many chunks to render around player
     private Thread chunkGeneratorThread;  // Thread for generating chunks
-
+    private Thread chunkRendererThread;   // Thread for rendering chunks
 
     private void Awake() {
         SetTerrainNoise();
-        GenerateSpawnChunks();   // Generates spawn chunks
+        // GenerateSpawnChunks();   // Generates spawn chunks
 
         InvokeRepeating("UpdateInspector", 0, 5);  // Updates inspector every second
     }
@@ -43,7 +44,9 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void SetTerrainNoise() {
-        terrainNoise = ScriptableObject.CreateInstance<FractalNoise>();
+        terrainNoiseTest = new TerrainNoise(0);
+        
+        terrainNoise = new FractalNoise();
         terrainNoise.SetSeed(0);
         terrainNoise.Amplitude = 50f;
         terrainNoise.Frequency = 0.003f;
@@ -60,7 +63,7 @@ public class TerrainGenerator : MonoBehaviour {
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
                 Chunk chunk = CreateChunk(chunkX, chunkZ);
-                chunk.GenerateHeightMap(terrainNoise);
+                chunk.GenerateHeightMap(terrainNoiseTest);
                 chunk.Generate();
                 RenderChunk(chunk);
             }
@@ -75,16 +78,29 @@ public class TerrainGenerator : MonoBehaviour {
         int max = RENDER_DISTANCE / 2;
 
         // Load all chunks around player with radius min to max ( = renderDistance )
+        // Starting from the chunk closest to the player
+        List<KeyValuePair<Chunk, int>> chunkList = new List<KeyValuePair<Chunk, int>>();
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
                 Vector2Int chunkPosition = new Vector2Int(playerChunk.x + chunkX, playerChunk.y + chunkZ);
                 Chunk chunk = CreateChunk(chunkPosition.x, chunkPosition.y);
                 if (chunk == null) continue;    // Chunk already exists, no need to generate
-                chunksToGenerate.Enqueue(chunk);
+                int distance = Mathf.Abs(chunkX) + Mathf.Abs(chunkZ);   // Calculate distance from player chunk
+                chunkList.Add(new KeyValuePair<Chunk, int>(chunk, distance));
             }
         }
 
-        StartCoroutine(GenerateChunks());
+        // Sort chunks by distance from player chunk
+        chunkList = chunkList.OrderBy(kvp => kvp.Value).ToList();
+
+        // Add sorted chunks to queue
+        foreach (KeyValuePair<Chunk, int> kvp in chunkList) {
+            chunksToGenerate.Enqueue(kvp.Key);
+        }
+
+        // StartCoroutine(GenerateChunks());
+
+        GenerateChunksInBackground();
         StartCoroutine(RenderChunks());
     }
 
@@ -97,13 +113,13 @@ public class TerrainGenerator : MonoBehaviour {
             // This gives priority to chunks that are closer to the player
             Debug.LogWarning("Too many chunks to generate, adding to overflow buffer: " + chunksOverflowBuffer.Count);
             while (chunksToGenerate.Count > 0) {
-                chunksOverflowBuffer.Enqueue(chunksToGenerate.Dequeue());
+                chunksOverflowBuffer.Enqueue(chunksToGenerate.TryDequeue(out Chunk chunk) ? chunk : null);
                 yield break;
             }
         }
         while (chunksToGenerate.Count > 0) {
             Debug.Log("Remaining chunks to generate: " + chunksToGenerate.Count);
-            Chunk chunk = chunksToGenerate.Dequeue();
+            chunksToGenerate.TryDequeue(out Chunk chunk);
             chunk.GenerateHeightMap(terrainNoise);
             chunk.Generate();
             chunksToRender.Enqueue(chunk);
@@ -112,17 +128,28 @@ public class TerrainGenerator : MonoBehaviour {
         if (chunksToGenerate.Count == 0 && chunksOverflowBuffer.Count > 0) {
             Debug.Log("Emptying overflow buffer");
             while (chunksOverflowBuffer.Count > 0) {
-                Chunk chunk = chunksOverflowBuffer.Dequeue();
+                chunksOverflowBuffer.TryDequeue(out Chunk chunk);
                 chunksToGenerate.Enqueue(chunk);
                 yield break;
             }
         }
-        
     }
 
+    private void GenerateChunksInBackground() {
+        chunkGeneratorThread = new Thread(() => {
+            while (chunksToGenerate.Count > 0) {
+                chunksToGenerate.TryDequeue(out Chunk chunk);
+                chunk.GenerateHeightMap(terrainNoise);
+                chunk.Generate();
+                chunksToRender.Enqueue(chunk);
+            }
+        });
+        chunkGeneratorThread.Start();
+    }
+    
     private IEnumerator RenderChunks() {
         while (chunksToRender.Count > 0) {
-            Chunk chunk = chunksToRender.Dequeue();
+            chunksToRender.TryDequeue(out Chunk chunk);
             RenderChunk(chunk);
             yield break;
         }

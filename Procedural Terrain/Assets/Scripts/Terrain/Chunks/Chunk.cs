@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Jobs;
@@ -12,7 +15,7 @@ using UnityEngine.Profiling;
 [RequireComponent(typeof(Chunk))]
 public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int MAX_HEIGHT = 100;  // Maximum height of terrain
+    private const int MAX_HEIGHT = 140;  // Maximum height of terrain
     private const int SEA_LEVEL = 40;   // Base terrain height
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private MeshData meshData = new MeshData(); // Mesh data for chunk
@@ -24,6 +27,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
     private bool isRendered = false;   
+
+    private Thread renderThread;
 
 
     #region Getters & Setters
@@ -72,6 +77,23 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                 heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z] = 
                     SEA_LEVEL + Mathf.FloorToInt((float)(terrainNoise.NoiseCombinedOctaves(i,j) + 0.5f) *
                     (float)terrainNoise.Amplitude);
+            });
+        });
+    }
+
+    /// <summary>
+    /// Generate the height map for the chunk using all noise maps (erosion, moisture, temperature, continentalness)
+    /// </summary>
+    public void GenerateHeightMap(TerrainNoise terrainNoise) {
+        heightMap = new int[CHUNK_SIZE, CHUNK_SIZE];
+        var chunkCoordinates = GetChunkCoordinates();
+
+        Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
+            Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
+                float continentalness = terrainNoise.GetContinentalness(i, j);
+                // Subtract chunk coordinates to get local coordinates in chunk (0,0) to (ChunkSize - 1, ChunkSize - 1)
+                heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z] = 
+                    SEA_LEVEL + terrainNoise.GetContinentalness(i, j);
             });
         });
     }
@@ -131,15 +153,13 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
 
         Profiler.BeginSample("Generating mesh");
-
-        GenerateOptimizedMesh();
+        GenerateOptimizedMeshGPU();
 
         Profiler.EndSample();
         Profiler.BeginSample("Applying mesh");
         UploadMesh();
         Profiler.EndSample();
         isRendered = true;
-
     }
 
     /// <summary>
@@ -186,7 +206,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     /// <summary>
     /// Generates an optimized mesh by looking at neighboring blocks and only drawing faces that are visible.
     /// </summary>
-    private void GenerateOptimizedMesh(){
+    public MeshData GenerateOptimizedMesh() {
         Vector3Int blockPos;
         Block block;
         Color color;
@@ -200,7 +220,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Block[] neighbors = new Block[6];
 
         foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
-            Profiler.BeginSample("Iterating over block");
             blockPos = kvp.Key;
             block = kvp.Value;    
             color = block.Color;        
@@ -219,7 +238,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                 // If the neighbor is null, then there is no block in that direction
                 if (neighbor == null || neighbor.IsTransparent) {
                     // Draw this face
-
                     transparency = block.IsTransparent ? new Vector2(0.5f, 0.5f) : new Vector2(1, 1);
                     for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
                         meshData.vertices.Add(faceVertices[VoxelData.voxelTris[directionIndex, vertexIndex]]);
@@ -227,13 +245,82 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                         meshData.UVs.Add(faceUVs[VoxelData.voxelTris[directionIndex, vertexIndex]]);
                         meshData.UVs2.Add(transparency);
                         meshData.triangles.Add(counter++);
+                        
                     }
                 }
             }
-            Profiler.EndSample();
         }
+
+        return meshData;
     }
 
+    private void GenerateOptimizedMeshGPU() {
+        // Clear the mesh data
+        meshData.ClearData();
+
+        // Create ComputeBuffers for the mesh data
+        ComputeBuffer verticesBuffer = new ComputeBuffer(blocks.Count * 36, sizeof(float) * 3);
+        ComputeBuffer colorsBuffer = new ComputeBuffer(blocks.Count * 36, sizeof(float) * 4);
+        ComputeBuffer UVsBuffer = new ComputeBuffer(blocks.Count * 36, sizeof(float) * 2);
+        ComputeBuffer UVs2Buffer = new ComputeBuffer(blocks.Count * 36, sizeof(float) * 2);
+        ComputeBuffer trianglesBuffer = new ComputeBuffer(blocks.Count * 36, sizeof(int));
+
+        var computeShader = Resources.Load<ComputeShader>("ComputeShaders/ChunkComputeShader");
+
+        // Set the buffers
+        computeShader.SetBuffer(0, "verticesBuffer", verticesBuffer);
+        computeShader.SetBuffer(0, "colorsBuffer", colorsBuffer);
+        computeShader.SetBuffer(0, "UVsBuffer", UVsBuffer);
+        computeShader.SetBuffer(0, "UVs2Buffer", UVs2Buffer);
+        computeShader.SetBuffer(0, "trianglesBuffer", trianglesBuffer);
+
+        // Create an array of block data
+        BlockData[] blockData = new BlockData[blocks.Count];
+        int index = 0;
+        foreach (KeyValuePair<Vector3Int, Block> kvp in blocks) {
+            blockData[index] = new BlockData(kvp.Key, kvp.Value);
+            index++;
+        }
+
+        // Create a ComputeBuffer for the block data
+        ComputeBuffer blockDataBuffer = new ComputeBuffer(blocks.Count, Marshal.SizeOf(typeof(BlockData)));
+        blockDataBuffer.SetData(blockData);
+
+        // Set the block data buffer
+        computeShader.SetBuffer(0, "blockDataBuffer", blockDataBuffer);
+
+        // Dispatch the compute shader
+        computeShader.Dispatch(0, blocks.Count, 1, 1);
+
+        // Create arrays to hold the data
+        Vector3[] vertices = new Vector3[blocks.Count * 36];
+        Color[] colors = new Color[blocks.Count * 36];
+        Vector2[] UVs = new Vector2[blocks.Count * 36];
+        Vector2[] UVs2 = new Vector2[blocks.Count * 36];
+        int[] triangles = new int[blocks.Count * 36];
+
+        // Get the data from the buffers
+        verticesBuffer.GetData(vertices);
+        colorsBuffer.GetData(colors);
+        UVsBuffer.GetData(UVs);
+        UVs2Buffer.GetData(UVs2);
+        trianglesBuffer.GetData(triangles);
+
+        // Add the data to the mesh data
+        meshData.vertices.AddRange(vertices);
+        meshData.colors.AddRange(colors);
+        meshData.UVs.AddRange(UVs);
+        meshData.UVs2.AddRange(UVs2);
+        meshData.triangles.AddRange(triangles);
+
+        // Release the buffers
+        blockDataBuffer.Release();
+        verticesBuffer.Release();
+        colorsBuffer.Release();
+        UVsBuffer.Release();
+        UVs2Buffer.Release();
+        trianglesBuffer.Release();
+    }
 
     private void UploadMesh() {
         meshData.UploadMesh();
@@ -297,5 +384,15 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             return 0;
         }
         return 1;
+    }
+
+    private struct BlockData {
+        public Vector3Int position;
+        public BlockType type;
+
+        public BlockData(Vector3Int position, Block block) {
+            this.position = position;
+            this.type = block.Type;
+        }
     }
 }

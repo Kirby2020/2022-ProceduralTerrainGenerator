@@ -1,0 +1,88 @@
+#pragma kernel CSMain
+
+// include the voxel data
+#include "voxeldata.cginc"
+
+struct BlockData {
+    float3 position;
+    float4 color;
+    float isTransparent;
+};
+
+RWStructuredBuffer<float3> verticesBuffer;
+RWStructuredBuffer<float4> colorsBuffer;
+RWStructuredBuffer<float2> UVsBuffer;
+RWStructuredBuffer<float2> UVs2Buffer;
+RWStructuredBuffer<int> trianglesBuffer;
+
+StructuredBuffer<BlockData> blockDataBuffer;
+
+int chunkSize;
+int minHeight;
+int maxHeight;
+int seaLevel;
+int blockCount;
+
+[numthreads(1, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID) {
+    if (id.x >= blockCount) {
+        return;
+    }
+
+    BlockData blockData = blockDataBuffer[id.x];
+    Vector3Int blockPos = blockData.position;
+    Block block = blockData.color;
+    Color color = blockData.color;
+    Vector2 transparency = new Vector2(1, 1);
+
+    Block[] neighbors = GetNeighbors(blockPos);
+
+    // Iterate over each face direction
+    for (int directionIndex = 0; directionIndex < 6; directionIndex++) {   
+        // Collect the appropriate vertices from the default vertices and add the block position
+        for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++) {
+            faceVertices[vertexIndex] = voxelVertices[voxelVertexIndex[directionIndex, vertexIndex]] + blockPos;
+            faceUVs[vertexIndex] = voxelUVs[vertexIndex];
+        }
+
+        Block neighbor = neighbors[directionIndex];
+        // If the neighbor is null, then there is no block in that direction
+        if (neighbor == null || neighbor.IsTransparent) {
+            // Draw this face
+            transparency = block.IsTransparent ? new Vector2(0.5f, 0.5f) : new Vector2(1, 1);
+            for (int vertexIndex = 0; vertexIndex < 6; vertexIndex++) {
+                verticesBuffer[vertexIndex] = faceVertices[voxelTris[directionIndex, vertexIndex]];
+                colorsBuffer[vertexIndex] = color;
+                UVsBuffer[vertexIndex] = faceUVs[voxelTris[directionIndex, vertexIndex]];
+                UVs2Buffer[vertexIndex] = transparency;
+                trianglesBuffer[vertexIndex] = vertexIndex;
+            }
+        }
+    }
+}
+
+Block[] GetNeighbors(Vector3Int blockPos) {
+    Block[] neighbors = new Block[6];
+
+    neighbors[0] = GetBlock(blockPos + Vector3Int.up);
+    neighbors[1] = GetBlock(blockPos + Vector3Int.down);
+    neighbors[2] = GetBlock(blockPos + Vector3Int.left);
+    neighbors[3] = GetBlock(blockPos + Vector3Int.right);
+    neighbors[4] = GetBlock(blockPos + Vector3Int.forward);
+    neighbors[5] = GetBlock(blockPos + Vector3Int.back);
+
+    return neighbors;
+}
+
+Block GetBlock(Vector3Int blockPos) {
+    if (blockPos.y < minHeight || blockPos.y > maxHeight) {
+        return null;
+    }
+
+    int index = blockPos.x + blockPos.y * chunkSize + blockPos.z * chunkSize * chunkSize;
+    if (index < 0 || index >= blockCount) {
+        return null;
+    }
+
+    return blockDataBuffer[index];
+}
