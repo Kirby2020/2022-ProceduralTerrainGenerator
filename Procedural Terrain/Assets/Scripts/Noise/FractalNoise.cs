@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class FractalNoise : ScriptableObject {
+public class FractalNoise {
 	
 	private int seed;
 	
