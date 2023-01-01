@@ -153,7 +153,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
 
         Profiler.BeginSample("Generating mesh");
-        GenerateOptimizedMeshGPU();
+        GenerateOptimizedMesh();
 
         Profiler.EndSample();
         Profiler.BeginSample("Applying mesh");
@@ -329,6 +329,11 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
 
         if (meshData.vertices.Count > 3) {}
             //meshCollider.sharedMesh = meshData.mesh;
+    }
+
+    public void UploadMesh(MeshData meshData) {
+        this.meshData = meshData;
+        UploadMesh();
     }
 
     private Block[] GetNeighbors(Vector3Int blockPos) {
