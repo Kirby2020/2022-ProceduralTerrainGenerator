@@ -9,7 +9,11 @@ public class GuiController : MonoBehaviour {
     [SerializeField] private Text debugText;
 
     // Update is called once per frame
-    void Update() {
+    void Awake() {
+        InvokeRepeating("UpdateText", 0, 1f);
+    }
+
+    void UpdateText() {
         var postion = playerCamera.transform.position;
         float x = Mathf.Round(postion.x);
         float y = Mathf.Round(postion.y);
