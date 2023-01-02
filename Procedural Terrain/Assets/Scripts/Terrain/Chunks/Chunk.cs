@@ -14,6 +14,8 @@ using UnityEngine.Profiling;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 [RequireComponent(typeof(Chunk))]
 public class Chunk : MonoBehaviour, IComparer<Chunk> {
+    public ChunkStatus Status { get; private set;} = ChunkStatus.Unloaded;
+
     private const int CHUNK_SIZE = 16;  // Size of each chunk
     private const int MAX_HEIGHT = 140;  // Maximum height of terrain
     private const int SEA_LEVEL = 40;   // Base terrain height
@@ -26,10 +28,12 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private ConcurrentDictionary<Vector3Int, Block> blocks { get; set; } = new ConcurrentDictionary<Vector3Int, Block>(); // Dictionary of blocks in chunk
     private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
-    private ChunkStatus status = ChunkStatus.Unloaded;
 
     private Thread renderThread;
 
+    private void Awake() {
+        Status = ChunkStatus.Creating;
+    }
 
     #region Getters & Setters
     public void SetPosition(int x, int z) {
@@ -49,7 +53,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
 
     public bool IsRendered() {
-        return status == ChunkStatus.Rendered;
+        return Status == ChunkStatus.Rendered;
     }
 
     public int GetBlockCount() {
@@ -65,6 +69,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         meshRenderer = GetComponent<MeshRenderer>();
         meshFilter = GetComponent<MeshFilter>();
         meshCollider = GetComponent<MeshCollider>();
+
+        Status = ChunkStatus.Created;
     }
 
     public void GenerateHeightMap(FractalNoise terrainNoise) {
@@ -99,7 +105,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
 
     public void Generate() {
-        status = ChunkStatus.Generating;
+        Status = ChunkStatus.Generating;
         var chunkCoordinates = GetChunkCoordinates();
         
         Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
@@ -129,7 +135,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             });
         });
 
-        status = ChunkStatus.Generated;
+        Status = ChunkStatus.Generated;
     }
     
     public void Fill() {
@@ -153,7 +159,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
     
     public void Render() {
-        status = ChunkStatus.Rendering;
+        Status = ChunkStatus.Rendering;
         meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
 
         Profiler.BeginSample("Generating mesh");
@@ -163,7 +169,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Profiler.BeginSample("Applying mesh");
         UploadMesh();
         Profiler.EndSample();
-        status = ChunkStatus.Rendered;
+        Status = ChunkStatus.Rendered;
     }
 
     /// <summary>

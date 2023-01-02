@@ -1,30 +1,33 @@
-using System;
 using System.Threading;
 using System.Collections;
-using Unity.Collections;
 using Unity.Mathematics;
 using System.Collections.Generic;
-using Unity.Jobs;
 using System.Linq;
 using UnityEngine;
 using System.Threading.Tasks;
-using UnityEngine.Events;
 using UnityEngine.Profiling;
 using System.Collections.Concurrent;
 
 public class TerrainGenerator : MonoBehaviour {
+    private const int RENDER_DISTANCE = 6;     // How many chunks to render around player
+
     [SerializeField] private Transform player;
     [SerializeField] private Material worldMaterial;
+
+    [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
+    [SerializeField] private int blockCount = 0;
+    [SerializeField] private int TotalVertices = 0;
+
     private ConcurrentQueue<Chunk> chunksToGenerate = new ConcurrentQueue<Chunk>(); // Queue of chunks to generate
     private ConcurrentQueue<Chunk> chunksToRender = new ConcurrentQueue<Chunk>();   // Queue of chunks to render
     private ConcurrentQueue<Chunk> chunksOverflowBuffer = new ConcurrentQueue<Chunk>();   // Overflow buffer for chunks
     private ConcurrentQueue<Chunk> renderedChunks = new ConcurrentQueue<Chunk>();  // Queue of chunks that have been generated
-    [SerializeField] private List<Vector2> chunksInspector = new List<Vector2>();  // List of chunks that have been generated
-    [SerializeField] private int blockCount = 0;
-    [SerializeField] private int TotalVertices = 0;
+
+    private ConcurrentDictionary<Vector2Int, Chunk> chunks = new ConcurrentDictionary<Vector2Int, Chunk>();  // Dictionary of chunks with their position as key
+
     private FractalNoise terrainNoise;  // Main noise map for terrain height
     private TerrainNoise terrainNoiseTest; 
-    private const int RENDER_DISTANCE = 6;     // How many chunks to render around player
+
     private Thread chunkCreatorThread;
     private Thread chunkGeneratorThread;
     private Thread chunkRendererThread;
@@ -39,6 +42,16 @@ public class TerrainGenerator : MonoBehaviour {
 
 
     private void Update() {
+        // test thread
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            chunkCreatorThread = new Thread(() => {
+                for (int i = 0; i < 1000; i++) {
+                    // do a heavy calculation
+                    int result = Mathf.FloorToInt(Mathf.Sqrt(i) * Mathf.Sqrt(i)) * Mathf.FloorToInt(Mathf.Sqrt(i) * Mathf.Sqrt(i));
+                    Debug.Log("Thread 1: " + result);
+                }
+            });
+        }
         // Remove chunks that are too far away
         // UnloadChunks();
     }
@@ -71,22 +84,19 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private IEnumerator GeneratePlayerChunks() {
-        var chunkList = new ConcurrentDictionary<Vector2Int, int>();
-
         while (true) {
-            Debug.Log("Chunklist: " + chunkList.Count);
+            List<Vector2Int> emptyChunkPositions = GetEmptyChunkPositions();
 
             Profiler.BeginSample("Creating chunks");
+            StartCoroutine(CreateChunks(emptyChunkPositions));
+            
+            Profiler.EndSample();
+            Profiler.BeginSample("Generating chunks");
 
-            StartCoroutine(CreateChunks(chunkList));
+            // StartCoroutine(GenerateChunks());
+            GenerateChunksInBackground();
 
             Profiler.EndSample();
-            // Profiler.BeginSample("Generating chunks");
-
-            // // StartCoroutine(GenerateChunks());
-            // GenerateChunksInBackground();
-
-            // Profiler.EndSample();
             // Profiler.BeginSample("Rendering chunks");
 
             // // StartCoroutine(RenderChunks());
@@ -97,42 +107,38 @@ public class TerrainGenerator : MonoBehaviour {
         }
     }
 
-    /// <summary>
-    /// Creates chunks around player
-    /// </summary>
-    /// <param name="chunkList">List of chunk positions and their distance from player</param>
-    private IEnumerator CreateChunks(ConcurrentDictionary<Vector2Int, int> chunkList) {
+    private List<Vector2Int> GetEmptyChunkPositions() {
         int min = -RENDER_DISTANCE / 2;  
         int max = RENDER_DISTANCE / 2;
 
         Vector2Int playerChunk = GetChunkPosition(player.position);      
-        
+
+        // Get all chunks that need to be created
+        ConcurrentDictionary<Vector2Int, int> chunkPositions = new ConcurrentDictionary<Vector2Int, int>(); // <position, distance>
+
         Parallel.For(min, max, chunkX => {
             Parallel.For(min, max, chunkZ => {
-                Vector2Int position = new Vector2Int(playerChunk.x + chunkX, playerChunk.y + chunkZ);
-                if (ChunkExists(position.x, position.y)) return;
+                Vector2Int chunkPosition = new Vector2Int(playerChunk.x + chunkX, playerChunk.y + chunkZ);
+                if (ChunkExistsAtPosition(chunkPosition.x, chunkPosition.y)) return;
                 int chunkDistance = math.abs(chunkX) + math.abs(chunkZ);
-                chunkList.TryAdd(position, chunkDistance);
+                chunkPositions.TryAdd(chunkPosition, chunkDistance);
             });
         });
 
-        // Sort chunks by distance from player chunk
-        chunkList = new ConcurrentDictionary<Vector2Int, int>(chunkList.OrderBy(x => x.Value));
+        return new List<Vector2Int>(chunkPositions.OrderBy(x => x.Value).Select(x => x.Key));
+    }
 
-        if (chunkList.Count == 0) yield return null;            
-
-        Vector2Int chunkPosition;
+    /// <summary>
+    /// Creates chunks around player
+    /// </summary>
+    private IEnumerator CreateChunks(List<Vector2Int> chunkPositions) {
         Chunk chunk;
-        int distance;
 
         // Load all chunks around player with radius min to max ( = renderDistance )
         // Starting from the chunk closest to the player
-        foreach (KeyValuePair<Vector2Int, int> kvp in chunkList) {
-            chunkPosition = kvp.Key;
-            distance = kvp.Value;
-
-            chunk = CreateChunk(chunkPosition.x, chunkPosition.y);
-            chunksToGenerate.Enqueue(chunk);
+        foreach (var position in chunkPositions) {
+            chunk = CreateChunk(position.x, position.y, true);
+            chunks.TryAdd(position, chunk);
 
             yield break;
         }
@@ -170,13 +176,12 @@ public class TerrainGenerator : MonoBehaviour {
     }
 
     private void GenerateChunksInBackground() {
-        if (chunksToGenerate.Count == 0) return;
+        var chunksToGenerate = chunks.Where(x => x.Value.Status == ChunkStatus.Created).Select(x => x.Value);
+        if (chunksToGenerate.Count() == 0) return;
         if (chunkGeneratorThread != null && chunkGeneratorThread.IsAlive) return;
 
         chunkGeneratorThread = new Thread(() => {
-            while (chunksToGenerate.Count > 0) {
-                chunksToGenerate.TryDequeue(out Chunk chunk);
-                if (chunk == null) continue;
+            foreach (Chunk chunk in chunksToGenerate) {
                 chunk.GenerateHeightMap(terrainNoise);
                 chunk.Generate();
                 chunksToRender.Enqueue(chunk);
@@ -219,7 +224,7 @@ public class TerrainGenerator : MonoBehaviour {
     /// <param name="chunkZ">Z position of the chunk</param>
     /// <param name="force">Force creation of chunk even if one already exists</param>
     private Chunk CreateChunk(int chunkX, int chunkZ, bool force = false) {
-        if (!force && ChunkExists(chunkX, chunkZ)) return null;
+        if (!force && ChunkExistsAtPosition(chunkX, chunkZ)) return null;
 
         Chunk chunk = new GameObject($"Chunk {chunkX}, {chunkZ}").AddComponent<Chunk>();
         chunk.SetPosition(chunkX, chunkZ);
@@ -230,12 +235,11 @@ public class TerrainGenerator : MonoBehaviour {
         return chunk;
     }
 
-    private bool ChunkExists(int chunkX, int chunkZ) {
-        if (renderedChunks.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return true;
-        if (chunksToGenerate.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return true;
-        if (chunksToRender.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return true;
-        if (chunksOverflowBuffer.Any(chunk => chunk.GetPosition() == new Vector2Int(chunkX, chunkZ))) return true;
-        return false;
+    private bool ChunkExistsAtPosition(int chunkX, int chunkZ) {
+        return chunks.Any(chunk => {
+            Vector2Int position = chunk.Key;
+            return position.x == chunkX && position.y == chunkZ;
+        });
     }
 
     /// <summary>
