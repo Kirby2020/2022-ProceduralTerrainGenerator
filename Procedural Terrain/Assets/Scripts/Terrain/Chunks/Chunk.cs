@@ -26,7 +26,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private ConcurrentDictionary<Vector3Int, Block> blocks { get; set; } = new ConcurrentDictionary<Vector3Int, Block>(); // Dictionary of blocks in chunk
     private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
-    private bool isRendered = false;   
+    private ChunkStatus status = ChunkStatus.Unloaded;
 
     private Thread renderThread;
 
@@ -49,7 +49,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
 
     public bool IsRendered() {
-        return isRendered;
+        return status == ChunkStatus.Rendered;
     }
 
     public int GetBlockCount() {
@@ -99,6 +99,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
 
     public void Generate() {
+        status = ChunkStatus.Generating;
         var chunkCoordinates = GetChunkCoordinates();
         
         Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
@@ -127,6 +128,8 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                 CreateBlock(i, SEA_LEVEL, j, BlockType.Water);
             });
         });
+
+        status = ChunkStatus.Generated;
     }
     
     public void Fill() {
@@ -150,6 +153,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     }
     
     public void Render() {
+        status = ChunkStatus.Rendering;
         meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
 
         Profiler.BeginSample("Generating mesh");
@@ -159,7 +163,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Profiler.BeginSample("Applying mesh");
         UploadMesh();
         Profiler.EndSample();
-        isRendered = true;
+        status = ChunkStatus.Rendered;
     }
 
     /// <summary>
