@@ -63,6 +63,10 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     public int GetVertexCount() {
         return GetComponent<MeshFilter>().mesh.vertexCount;
     }
+
+    public MeshData GetMeshData() {
+        return meshData;
+    }
     #endregion
 
     public void Initialize() {
@@ -70,10 +74,13 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         meshFilter = GetComponent<MeshFilter>();
         meshCollider = GetComponent<MeshCollider>();
 
+        meshData.ClearData();
+
         Status = ChunkStatus.Created;
     }
 
     public void GenerateHeightMap(FractalNoise terrainNoise) {
+        Status = ChunkStatus.Generating;
         heightMap = new int[CHUNK_SIZE, CHUNK_SIZE];
         var chunkCoordinates = GetChunkCoordinates();
 
@@ -91,6 +98,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     /// Generate the height map for the chunk using all noise maps (erosion, moisture, temperature, continentalness)
     /// </summary>
     public void GenerateHeightMap(TerrainNoise terrainNoise) {
+        Status = ChunkStatus.Generating;
         heightMap = new int[CHUNK_SIZE, CHUNK_SIZE];
         var chunkCoordinates = GetChunkCoordinates();
 
@@ -134,8 +142,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
                 CreateBlock(i, SEA_LEVEL, j, BlockType.Water);
             });
         });
-
-        Status = ChunkStatus.Generated;
     }
     
     public void Fill() {
@@ -158,18 +164,17 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Destroy(gameObject);    // Remove chunk game object from scene
     }
     
-    public void Render() {
-        Status = ChunkStatus.Rendering;
-        meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
-
+    public void Render() {       
         Profiler.BeginSample("Generating mesh");
+
         GenerateOptimizedMesh();
 
         Profiler.EndSample();
         Profiler.BeginSample("Applying mesh");
+
         UploadMesh();
+
         Profiler.EndSample();
-        Status = ChunkStatus.Rendered;
     }
 
     /// <summary>
@@ -217,12 +222,14 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     /// Generates an optimized mesh by looking at neighboring blocks and only drawing faces that are visible.
     /// </summary>
     public MeshData GenerateOptimizedMesh() {
+        Status = ChunkStatus.Generating;
+
         Vector3Int blockPos;
         Block block;
         Color color;
         Vector2 transparency = new Vector2(1, 1);
 
-        meshData.ClearData();
+        // meshData.ClearData();
 
         int counter = 0;
         Vector3[] faceVertices = new Vector3[4];
@@ -261,6 +268,7 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             }
         }
 
+        Status = ChunkStatus.Generated;
         return meshData;
     }
 
@@ -332,13 +340,18 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         trianglesBuffer.Release();
     }
 
-    private void UploadMesh() {
+    public void UploadMesh() {
+        Status = ChunkStatus.Rendering;
+        meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
+
         meshData.UploadMesh();
 
         meshFilter.mesh = meshData.mesh;
 
         if (meshData.vertices.Count > 3) {}
             //meshCollider.sharedMesh = meshData.mesh;
+
+        Status = ChunkStatus.Rendered;
     }
 
     public void UploadMesh(MeshData meshData) {
