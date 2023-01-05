@@ -9,7 +9,7 @@ using UnityEngine.Profiling;
 using System.Collections.Concurrent;
 
 public class TerrainGenerator : MonoBehaviour {
-    private const int RENDER_DISTANCE = 4;     // How many chunks to render around player
+    private const int RENDER_DISTANCE = 16;     // How many chunks to render around player
 
     [SerializeField] private Transform player;
     [SerializeField] private Material worldMaterial;
@@ -72,64 +72,33 @@ public class TerrainGenerator : MonoBehaviour {
         }
     }
 
-    private IEnumerator GeneratePlayerChunks2() {
-        int i = 0;
-
-        while (i < 1) {
-            Debug.LogWarning("Generating player chunks: " + i);
-
-            Profiler.BeginSample("Creating chunks");
-            Debug.LogWarning("Creating chunks");
-            CreateChunks();
-            
-            Profiler.EndSample();
-            Profiler.BeginSample("Generating chunks");
-            Debug.LogWarning("Generating chunks");
-
-            // StartCoroutine(GenerateChunks());
-            GenerateChunksInBackground();
-
-            Profiler.EndSample();
-            Profiler.BeginSample("Rendering chunks");
-            Debug.LogWarning("Rendering chunks");
-            //RenderChunks();
-
-            Profiler.EndSample();
-
-            i++;
-
-            yield return new WaitForEndOfFrame();
-        }
-    }
-
     private IEnumerator GeneratePlayerChunks() {
-
-        while (true) {
+        int i = 0;
+        bool isCreating = false;
+        
+        while (i <= 10) {
+            Debug.Log("Generate: " + i);
             CreateChunks();
-            GenerateChunksInBackground();
-            StartCoroutine(RenderChunks());
-
-            yield return new WaitForEndOfFrame();
+            Debug.Log("Next");
+            i++;
+            yield return new WaitForSeconds(1);
         }
     }
 
     /// <summary>
-    /// Returns a list of all chunks that need to be generated
+    /// Returns a list of all chunks that need to be generated around the player
     /// </summary>
-    private List<Vector2Int> GetEmptyChunkPositions() {
+    private List<Vector2Int> GetEmptyChunkPositionsAroundPosition(Vector2Int playerChunk) {
         int min = -RENDER_DISTANCE / 2;  
         int max = RENDER_DISTANCE / 2;
-
-        Vector2Int playerChunk = GetChunkPosition(player.position);      
-
-        ConcurrentDictionary<Vector2Int, int> chunkPositions = new ConcurrentDictionary<Vector2Int, int>(); // <position, distance>
+        
+        ConcurrentDictionary<Vector2Int, int> chunkPositions = new ConcurrentDictionary<Vector2Int, int>();
 
         Parallel.For(min, max, chunkX => {
             Parallel.For(min, max, chunkZ => {
                 Vector2Int chunkPosition = new Vector2Int(playerChunk.x + chunkX, playerChunk.y + chunkZ);
                 if (ChunkExistsAtPosition(chunkPosition.x, chunkPosition.y)) return;
-                Debug.Log("Assigning position: " + chunkPosition);
-                int chunkDistance = math.abs(chunkX) + math.abs(chunkZ);
+                int chunkDistance = (int)(math.distancesq(chunkPosition.x, playerChunk.x) + (math.distancesq(chunkPosition.y, playerChunk.y)));
                 chunkPositions.TryAdd(chunkPosition, chunkDistance);
             });
         });
@@ -140,9 +109,12 @@ public class TerrainGenerator : MonoBehaviour {
     /// <summary>
     /// Creates chunks around player
     /// </summary>
-    private void CreateChunks() {
+    private async void CreateChunks() {
+        Profiler.BeginSample("CreateChunks");
         Chunk chunk;
-        List<Vector2Int> emptyChunkPositions = GetEmptyChunkPositions();
+        Vector2Int playerChunk = GetChunkPosition(player.position);   
+        List<Vector2Int> emptyChunkPositions = await Task.Run(() => GetEmptyChunkPositionsAroundPosition(playerChunk));
+
         if (emptyChunkPositions.Count == 0) {
             Debug.LogError("No chunks to create");
             return;
@@ -152,10 +124,12 @@ public class TerrainGenerator : MonoBehaviour {
         // Load all chunks around player with radius min to max ( = renderDistance )
         // Starting from the chunk closest to the player
         foreach (var position in emptyChunkPositions) {
-            Debug.Log("Creating chunk: " + position);
             chunk = CreateChunk(position.x, position.y, true);
             chunks.TryAdd(position, chunk);
         }
+        Profiler.EndSample();
+
+        Debug.Log("Chunks created: " + chunks.Count);
     }    
 
     private IEnumerator GenerateChunks() {
@@ -201,7 +175,6 @@ public class TerrainGenerator : MonoBehaviour {
 
         await Task.Run(() => {
             foreach (Chunk chunk in chunksToGenerate) {
-                Debug.Log("Generating chunk: " + chunk.GetPosition());
                 chunk.GenerateHeightMap(terrainNoise);
                 chunk.Generate();
                 chunk.GenerateOptimizedMesh();
@@ -212,7 +185,7 @@ public class TerrainGenerator : MonoBehaviour {
     
     private IEnumerator RenderChunks() {
         IEnumerable<Chunk> chunksToRender;
-
+        while (true) {
             chunksToRender = chunks.Where(x => x.Value.Status == ChunkStatus.Generated).Select(x => x.Value);
 
             if (chunksToRender.Count() == 0) {
@@ -223,11 +196,12 @@ public class TerrainGenerator : MonoBehaviour {
             Debug.LogWarning("Chunks to render: " + chunksToRender.Count());
 
             foreach (Chunk chunk in chunksToRender) {
-                Debug.Log("________________Uploading mesh: " + chunk.GetPosition());
                 chunk.UploadMesh();
                 renderedChunks.Enqueue(chunk);
-                yield break;
-            }        
+            }     
+
+            yield return new WaitForEndOfFrame();
+        }   
     }
 
     /// <summary>
