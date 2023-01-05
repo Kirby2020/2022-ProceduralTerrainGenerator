@@ -18,19 +18,13 @@ public class TerrainGenerator : MonoBehaviour {
     [SerializeField] private int blockCount = 0;
     [SerializeField] private int TotalVertices = 0;
 
-    private ConcurrentQueue<Chunk> chunksToGenerate = new ConcurrentQueue<Chunk>(); // Queue of chunks to generate
-    private ConcurrentQueue<Chunk> chunksToRender = new ConcurrentQueue<Chunk>();   // Queue of chunks to render
-    private ConcurrentQueue<Chunk> chunksOverflowBuffer = new ConcurrentQueue<Chunk>();   // Overflow buffer for chunks
-    private ConcurrentQueue<Chunk> renderedChunks = new ConcurrentQueue<Chunk>();  // Queue of chunks that have been generated
-
     private ConcurrentDictionary<Vector2Int, Chunk> chunks = new ConcurrentDictionary<Vector2Int, Chunk>();  // Dictionary of chunks with their position as key
 
-    private FractalNoise terrainNoise;  // Main noise map for terrain height
-    private TerrainNoise terrainNoiseTest; 
+    private TerrainNoise terrainNoise; 
 
     private void Awake() {
         SetTerrainNoise();
-        // GenerateSpawnChunks();   // Generates spawn chunks
+        GenerateSpawnChunks();   // Generates spawn chunks
 
         InvokeRepeating("UpdateInspector", 0, 5);  // Updates inspector every second
     }
@@ -42,19 +36,11 @@ public class TerrainGenerator : MonoBehaviour {
 
     private void Update() {
         // Remove chunks that are too far away
-        // UnloadChunks();
+        UnloadChunks();
     }
 
     private void SetTerrainNoise() {
-        terrainNoiseTest = new TerrainNoise(0);
-        
-        terrainNoise = new FractalNoise();
-        terrainNoise.SetSeed(0);
-        terrainNoise.Amplitude = 50f;
-        terrainNoise.Frequency = 0.003f;
-        terrainNoise.Octaves = 4;
-        terrainNoise.Lacunarity = 2f;
-        terrainNoise.Persistence = 0.5f;        
+        terrainNoise = new TerrainNoise(0);     
     }
 
     #region Chunk Generation
@@ -65,7 +51,7 @@ public class TerrainGenerator : MonoBehaviour {
         for (int chunkX = min; chunkX < max; chunkX++) {
             for (int chunkZ = min; chunkZ < max; chunkZ++) {
                 Chunk chunk = CreateChunk(chunkX, chunkZ);
-                chunk.GenerateHeightMap(terrainNoiseTest);
+                chunk.GenerateHeightMap(terrainNoise);
                 chunk.Generate();
                 RenderChunk(chunk);
             }
@@ -124,7 +110,7 @@ public class TerrainGenerator : MonoBehaviour {
         // Load all chunks around player with radius min to max ( = renderDistance )
         // Starting from the chunk closest to the player
         foreach (var position in emptyChunkPositions) {
-            chunk = CreateChunk(position.x, position.y, true);
+            chunk = CreateChunk(position.x, position.y);
             chunks.TryAdd(position, chunk);
         }
         Profiler.EndSample();
@@ -132,38 +118,7 @@ public class TerrainGenerator : MonoBehaviour {
         Debug.Log("Chunks created: " + chunks.Count);
     }    
 
-    private IEnumerator GenerateChunks() {
-        int maxChunksToGenerate = RENDER_DISTANCE * RENDER_DISTANCE;
-
-        if (chunksToGenerate.Count > maxChunksToGenerate) {
-            // If there are too many chunks to generate,
-            // Add chunks to overflow queue and generate them later
-            // This gives priority to chunks that are closer to the player
-            Debug.LogWarning("Too many chunks to generate, adding to overflow buffer: " + chunksOverflowBuffer.Count);
-            while (chunksToGenerate.Count > 0) {
-                chunksOverflowBuffer.Enqueue(chunksToGenerate.TryDequeue(out Chunk chunk) ? chunk : null);
-                yield break;
-            }
-        }
-        while (chunksToGenerate.Count > 0) {
-            Debug.Log("Remaining chunks to generate: " + chunksToGenerate.Count);
-            chunksToGenerate.TryDequeue(out Chunk chunk);
-            chunk.GenerateHeightMap(terrainNoise);
-            chunk.Generate();
-            chunksToRender.Enqueue(chunk);
-            yield break;
-        }
-        if (chunksToGenerate.Count == 0 && chunksOverflowBuffer.Count > 0) {
-            Debug.Log("Emptying overflow buffer");
-            while (chunksOverflowBuffer.Count > 0) {
-                chunksOverflowBuffer.TryDequeue(out Chunk chunk);
-                chunksToGenerate.Enqueue(chunk);
-                yield break;
-            }
-        }
-    }
-
-    private async void GenerateChunksInBackground() {
+    private async void GenerateChunks() {
         var chunksToGenerate = chunks.Where(x => x.Value.Status == ChunkStatus.Created).Select(x => x.Value);
 
         if (chunksToGenerate.Count() == 0) {
@@ -178,7 +133,6 @@ public class TerrainGenerator : MonoBehaviour {
                 chunk.GenerateHeightMap(terrainNoise);
                 chunk.Generate();
                 chunk.GenerateOptimizedMesh();
-                chunksToRender.Enqueue(chunk);
             }
         });
     }
@@ -197,7 +151,6 @@ public class TerrainGenerator : MonoBehaviour {
 
             foreach (Chunk chunk in chunksToRender) {
                 chunk.UploadMesh();
-                renderedChunks.Enqueue(chunk);
             }     
 
             yield return new WaitForEndOfFrame();
@@ -210,10 +163,7 @@ public class TerrainGenerator : MonoBehaviour {
     /// <returns>Chunk container for the given coordinate or null if one already exists</returns>
     /// <param name="chunkX">X position of the chunk</param>
     /// <param name="chunkZ">Z position of the chunk</param>
-    /// <param name="force">Force creation of chunk even if one already exists</param>
-    private Chunk CreateChunk(int chunkX, int chunkZ, bool force = false) {
-        if (!force && ChunkExistsAtPosition(chunkX, chunkZ)) return null;
-
+    private Chunk CreateChunk(int chunkX, int chunkZ) {
         Chunk chunk = new GameObject($"Chunk {chunkX}, {chunkZ}").AddComponent<Chunk>();
         chunk.SetPosition(chunkX, chunkZ);
         chunk.SetParent(transform);
@@ -230,15 +180,16 @@ public class TerrainGenerator : MonoBehaviour {
     private void RenderChunk(Chunk chunk) {
         if (chunk == null) return; // Chunk not generated yet
         chunk.Render();
-        renderedChunks.Enqueue(chunk);
     }
 
     /// <summary>
     /// Remove chunks that are too far away from the player.
     /// </summary>
     private void UnloadChunks() {
-        while (renderedChunks.Count > 20 * RENDER_DISTANCE * RENDER_DISTANCE) {
-            renderedChunks.TryDequeue(out Chunk chunk);
+        var renderedChunks = chunks.Where(x => x.Value.Status == ChunkStatus.Rendered).Select(x => x.Value);
+
+        while (renderedChunks.Count() > 20 * RENDER_DISTANCE * RENDER_DISTANCE) {
+            Chunk chunk = renderedChunks.First();
             chunk.Clear();
         }
     }
