@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Profiling;
 
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 [RequireComponent(typeof(Chunk))]
-public class Chunk : MonoBehaviour, IComparer<Chunk> {
+public class Chunk : MonoBehaviour {
     public ChunkStatus Status { get; private set;} = ChunkStatus.Unloaded;
 
     private const int CHUNK_SIZE = 16;  // Size of each chunk
@@ -29,7 +30,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
     private int[,] heightMap;           // Height map for chunk
     private Vector2Int position;        // Position of chunk
 
-    private Thread renderThread;
 
     private void Awake() {
         Status = ChunkStatus.Creating;
@@ -77,21 +77,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         meshData.ClearData();
 
         Status = ChunkStatus.Created;
-    }
-
-    public void GenerateHeightMap(FractalNoise terrainNoise) {
-        Status = ChunkStatus.Generating;
-        heightMap = new int[CHUNK_SIZE, CHUNK_SIZE];
-        var chunkCoordinates = GetChunkCoordinates();
-
-        Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
-            Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
-                // Subtract chunk coordinates to get local coordinates in chunk (0,0) to (ChunkSize - 1, ChunkSize - 1)
-                heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z] = 
-                    SEA_LEVEL + Mathf.FloorToInt((float)(terrainNoise.NoiseCombinedOctaves(i,j) + 0.5f) *
-                    (float)terrainNoise.Amplitude);
-            });
-        });
     }
 
     /// <summary>
@@ -143,24 +128,13 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             });
         });
     }
-    
-    public void Fill() {
-        var chunkCoordinates = GetChunkCoordinates();
-
-        for (int x = chunkCoordinates.x; x < chunkCoordinates.x + CHUNK_SIZE; x++) {
-            for (int z = chunkCoordinates.z; z < chunkCoordinates.z + CHUNK_SIZE; z++) {
-                for (int y = MIN_HEIGHT; y < MAX_HEIGHT; y++) {
-                    Block block = CreateBlock(x, y, z);
-                }                           
-            }
-        }
-    }
 
     /// <summary>
     /// Removes all blocks from chunk
     /// </summary>
     public void Clear() {
         blocks.Clear();     
+        Status = ChunkStatus.Destroyed;
         Destroy(gameObject);    // Remove chunk game object from scene
     }
     
@@ -344,8 +318,12 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         Status = ChunkStatus.Rendering;
         meshRenderer.sharedMaterial = material ?? new Material(Shader.Find("Standard"));
 
-        meshData.UploadMesh();
-
+        try {
+            meshData.UploadMesh();
+        } catch {
+            Debug.Log("Error uploading mesh");
+            throw new UnityException("Error uploading mesh");
+        }
         meshFilter.mesh = meshData.mesh;
 
         if (meshData.vertices.Count > 3) {}
@@ -378,10 +356,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
         return null;
     }
 
-    private bool IsInChunk(Vector3Int blockPos) {
-        return blockPos.x >= 0 && blockPos.x < CHUNK_SIZE && blockPos.y >= 0 && blockPos.y < CHUNK_SIZE;
-    }
-
     private Vector3Int GetChunkCoordinates() {
         return new Vector3Int(position.x * CHUNK_SIZE, 0, position.y * CHUNK_SIZE);
     }
@@ -404,14 +378,6 @@ public class Chunk : MonoBehaviour, IComparer<Chunk> {
             case BlockType.Water: return new WaterBlock();
             default: return new StoneBlock();
         }
-    }
-
-    int IComparer<Chunk>.Compare(Chunk x, Chunk y){
-        // compare each chunk's position
-        if (x.position.x == y.position.x && x.position.y == y.position.y) {
-            return 0;
-        }
-        return 1;
     }
 
     private struct BlockData {

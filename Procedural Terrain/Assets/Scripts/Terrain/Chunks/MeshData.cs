@@ -39,19 +39,23 @@ public struct MeshData {
     }
 
     public void UploadMesh(bool sharedVertices = false) {
-        mesh.SetVertices(vertices);
-        mesh.SetTriangles(triangles, 0, false);
+        try {
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0, false);
 
-        mesh.SetColors(colors);
-        mesh.SetUVs(0, UVs);
-        mesh.SetUVs(2, UVs2);
+            mesh.SetColors(colors);
+            mesh.SetUVs(0, UVs);
+            mesh.SetUVs(2, UVs2);
 
-        mesh.Optimize();
+            mesh.Optimize();
 
-        mesh.RecalculateNormals();
+            mesh.RecalculateNormals();
 
-        mesh.RecalculateBounds();
+            mesh.RecalculateBounds();
 
-        mesh.UploadMeshData(false);
+            mesh.UploadMeshData(false);
+        } catch {
+            throw new UnityException("Error uploading mesh data");
+        }
     }
 }
