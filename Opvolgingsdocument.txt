@@ -233,6 +233,12 @@ naar dat technisch logboek.>
 30-11:	Schrijven hoofdstuk 4.1 Introductie
 	Schrijven hoofdstuk 4.2 3D rendering
 	Schrijven hoofdstuk 4.3 De kubus
+7-01:	Schrijven hoofdstuk 4.4 Eenvoudig terrein genereren
+	Schrijven hoofdstuk 4.5 Noise integreren in terrein
+	Schrijven hoofdstuk 4.6 Optimalisatie 1: chunks
+	Schrijven hoofdstuk 4.7 Optimalisatie 2: custom mesh renderer
+	Schrijven hoofdstuk 4.8 Optimalisatie 3: multi-threading
+	Schrijven hoofdstuk 5	Besluit
 
 
 
@@ -297,6 +303,8 @@ Eindrapportering:
 
 <Geef hier een eindstand van wat je bereikt hebt (en wat niet).
 Hierin verwijs je ook naar eventuele bijkomende documenten of informatie om dit te onderbouwen.>
+
+De kleine demo's over alle noisefuncties
 
 Reflectie:
 

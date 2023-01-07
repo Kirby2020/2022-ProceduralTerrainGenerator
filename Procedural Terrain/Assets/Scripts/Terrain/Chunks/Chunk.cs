@@ -17,9 +17,9 @@ using UnityEngine.Profiling;
 public class Chunk : MonoBehaviour {
     public ChunkStatus Status { get; private set;} = ChunkStatus.Unloaded;
 
-    private const int CHUNK_SIZE = 16;  // Size of each chunk
-    private const int MAX_HEIGHT = 140;  // Maximum height of terrain
-    private const int SEA_LEVEL = 40;   // Base terrain height
+    private const int CHUNK_SIZE = 8;  // Size of each chunk
+    private const int MAX_HEIGHT = 160;  // Maximum height of terrain
+    private const int SEA_LEVEL = 20;   // Base terrain height
     private const int MIN_HEIGHT = 0;   // Minimum height of terrain
     private MeshData meshData = new MeshData(); // Mesh data for chunk
     private MeshRenderer meshRenderer;  
@@ -85,14 +85,13 @@ public class Chunk : MonoBehaviour {
     public void GenerateHeightMap(TerrainNoise terrainNoise) {
         Status = ChunkStatus.Generating;
         heightMap = new int[CHUNK_SIZE, CHUNK_SIZE];
-        var chunkCoordinates = GetChunkCoordinates();
+        var chunkCoordinates = GetChunkCoordinates();        
 
         Parallel.For(chunkCoordinates.x, chunkCoordinates.x + CHUNK_SIZE, i => {
             Parallel.For(chunkCoordinates.z, chunkCoordinates.z + CHUNK_SIZE, j => {
-                float continentalness = terrainNoise.GetContinentalness(i, j);
+                int height = terrainNoise.GetHeight(i, j);
                 // Subtract chunk coordinates to get local coordinates in chunk (0,0) to (ChunkSize - 1, ChunkSize - 1)
-                heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z] = 
-                    SEA_LEVEL + terrainNoise.GetContinentalness(i, j);
+                heightMap[i - chunkCoordinates.x, j - chunkCoordinates.z] = SEA_LEVEL + height;
             });
         });
     }

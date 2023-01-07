@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public class Continentalness {
-    private const int OCTAVES = 4;
-    private const float FREQUENCY = 0.005f;
+    private const int OCTAVES = 3;
+    private const float FREQUENCY = 0.0035f;
     private const int AMPLITUDE = 1;
     private const float LACUNARITY = 2.0f;
     private const float PERSISTENCE = 0.5f;
@@ -13,26 +13,31 @@ public class Continentalness {
     private int[,] continentalnessMap;
     private FractalNoise noise;
     private SplineInterpolator interpolator;
-    private int seed;
+    private int seed = 0;
+    private int size = 0;
 
-    public Continentalness(int seed, int size) {
-        this.seed = seed;
+    public Continentalness(int size) {
+        noise = new FractalNoise();
+        this.size = size;
+
         InitInterpolator();
-        Generate(size);
+    }
+
+    public void SetSeed(int seed) {
+        this.seed = seed;
+        noise.SetSeed(seed);
     }
 
     private void InitInterpolator() {
-        float[] xValues = new float[] { -2, 0, 1, 1.5f, 2 };    // noise values
-        float[] yValues = new float[] { -100, 0, 20, 90, 100 };    // continentalness values
+        float[] xValues = new float[] { -2, -1, -0.5f, 0, 0.3f, 0.5f, 1, 1.5f, 1.7f, 1.9f, 2};    // noise values
+        float[] yValues = new float[] { -100, -80, -20, 0, 5, 10, 30, 70, 90, 97, 100};    // continentalness values
 
         interpolator = new SplineInterpolator(xValues, yValues);
     }
 
-    private void Generate(int size) {
+    public void Generate() {
         continentalnessMap = new int[size, size];
 
-        noise = new FractalNoise();
-        noise.SetSeed(seed);
         noise.Frequency = FREQUENCY;
         noise.Amplitude = AMPLITUDE;
         noise.Octaves = OCTAVES;
