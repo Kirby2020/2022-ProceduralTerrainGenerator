@@ -295,7 +295,7 @@ Probeer voldoende tijd vrij te maken voor POP en veel succes!
 
 
 =================================================================================
-Eindrapportering - <datum van ingave>
+Eindrapportering - <08/01/2023>
 =================================================================================
 
 
@@ -304,7 +304,10 @@ Eindrapportering:
 <Geef hier een eindstand van wat je bereikt hebt (en wat niet).
 Hierin verwijs je ook naar eventuele bijkomende documenten of informatie om dit te onderbouwen.>
 
-De kleine demo's over alle noisefuncties
+	De kleine demo's over alle noisefuncties zijn allemaal klaar en zijn ook verwerkt in hoofdstuk 3.1
+	Voor mijn hoofdproject: PGT, kan ik een eenvoudig terrein genereren met noise.
+	Graag had ik nog iets meer variatie in het terrein gehad zoals extreme bergen/dallen,
+	plateau's, biomes en tunnels.
 
 Reflectie:
 
@@ -312,20 +315,71 @@ Reflectie:
  Wat had beter gekund? Waren er alternatieven voor je aanpak? Wat zou je achteraf gezien anders
  gedaan hebben? Hoe zou je je nog verder kunnen profileren in de richting van je onderwerp? >
 
+	Over het algemeen ben ik niet superblij met hoever ik sta. Ik had op zijn minst iets meer variatie in hoogte willen hebben in mijn terrein
+	zoals platte landschappen op een plaats, extreme bergen en cliffen op de andere.
+	Wat wel positief is, is hoeveel nieuwe informatie ik heb bijgeleerd zowel over noise als terreingeneratie zelf.
+	In de toekomst zal ik hier zeker gebruik van kunnen maken en hopelijk ook verder verfijnen.
+	Ik zou eventueel kunnen expirementeren met 3D noise of meerdere dimensies. Ook door de opkomst van AI kan ik dat misschien ergens insteken.
+	Of in plaats van terrein kan ik nog andere zaken genereren.
+
+	Ik denk dat ik wel voldoende tijd in dit vak heb gestoken, zeker meer dan 100 uur toch. Maar ik denk dat PGT een beetje onderschat heb.
+	Ook bijt ik mij altijd te hard vast als iets niet direct lukt. Ik heb heel veel tijd verloren aan het optimaliseren van chunk generatie.
+	Misschien was het beter geweest als ik niet ging voor infinite terrain en gewoon voor een vaste grootte.
+
+	
+	
+
 
 Inhoud Portfolio:
 
 <Geef hier een overzicht van de informatie die je portfolio bevat> 
+	- Opvolgingsdocument
+	- Datasheet voor noisemap waarden (PGT noise values.xlsx)
+	- Technisch logboek (.docx)
+	- Theoretisch verslag 
+	- Eindevaluatie
 
 
 Bronnenlijst:
 
 <Geef hier een lijst van gebruikte bronnen volgens de IEEE-standaard>
+	
+	zie verslag
+
+	+ Externe bronnen:
+Artikels:
+	- http://pcgbook.com/
+	- https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-1-generating-complex-procedural-terrains-using-gpu
+	- https://www.alanzucconi.com/2022/06/05/minecraft-world-generation/
+	- (Thesis) https://s3.eu-central-1.amazonaws.com/ucu.edu.ua/wp-content/uploads/sites/8/2021/07/	Melnychuk-Vladyslav_188572_assignsubmission_file_VladyslavMelnychuk.pdf
+	- https://s3.eu-central-1.amazonaws.com/ucu.edu.ua/wp-content/uploads/sites/8/2021/07/Melnychuk-Vladyslav_188572_assignsubmission_file_VladyslavMelnychuk.pdf
+
+
+Videos informatie 
+	Algemeen:
+		- How does procedural generation work? | Bitwise (https://www.youtube.com/watch?v=-POwgollFeY)
+		- Procedural World Generation | How does it work? (https://www.youtube.com/watch?v=Pgt82G4Jxac)
+		- How Procedurally Generated Terrain Works (https://www.youtube.com/watch?v=JdYkcrW8FBg)
+		- Procedural Landmass Generation (E01: Introduction) (https://www.youtube.com/watch?v=wbpMiKiSKm8)
+		- How computers generate RANDOMNESS from math (https://www.youtube.com/watch?v=nBq4sFg3at0)
+	Gamespecifiek (Minecraft)
+		- THIS is how Minecraft Works 💎⛏️ (https://www.youtube.com/watch?v=YyVAaJqYAfE)
+		- How Minecraft Generates Massive Virtual Worlds from Scratch (https://www.youtube.com/watch?v=FcxYTe31isA)
+		- Minecraft terrain generation in a nutshell (https://www.youtube.com/watch?v=CSa5O6knuwI)
+Tutorials
+	- Infinite Procedural Terrain in Unity (https://www.youtube.com/watch?v=f9uueg_AUZs)
+	- (Serie) Procedural voxel terrain generation in Unity #1 - Creating a cube! (https://www.youtube.com/watch?v=lyDJPVp7Oc8)
+	- (Serie) Unity Voxels - Procedural Generation Tutorial - Part 1: The First Cube (https://www.youtube.com/watch?v=EubjobNVJdM)
+	- PROCEDURAL TERRAIN in Unity! - Mesh Generation (https://www.youtube.com/watch?v=64NblGkAabk)
+
+
 
 Zelfevaluatie:
 
 <Geef jezelf hier een score (gaande van 'NVT' tot 'A') voor de items die in het 
 evaluatiedocument een witte achtergrond hebben>
+
+	Zie document Eindevaluatie.pdf
 
 
 
